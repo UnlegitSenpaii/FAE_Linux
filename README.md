@@ -7,6 +7,8 @@ Example: <br>
 `./FAE_Linux /home/senpaii/steamdrives/nvme1/SteamLibrary/steamapps/common/Factorio/bin/x64/factorio`
 
 ## Notes
+Tested on OS: Arch Linux x86_64 Kernel: 6.0.12-arch1-1 
+
 Get the patterns from ghidra.<br>
 I used the windows patterns as a reference, this makes it very easy to find the patterns.<br>
 If there is an update you can just compare the old and new file versions, no need to use the windows version. <br>
