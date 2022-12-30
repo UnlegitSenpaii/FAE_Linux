@@ -6,6 +6,9 @@ Get the executable file from the release tab and run it with the factorio path a
 Example: <br>
 `./FAE_Linux /home/senpaii/steamdrives/nvme1/SteamLibrary/steamapps/common/Factorio/bin/x64/factorio`
 
+## Building
+You can build the binary yourself using `cmake CMakeLists.txt`.
+
 ## Notes
 Tested on OS: Arch Linux x86_64 Kernel: 6.0.12-arch1-1 
 
