@@ -14,8 +14,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: make
-      run: make ${{ github.workspace }}/CMakeLists.txt
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+      run: cmake ${{ github.workspace }}/CMakeLists.txt
