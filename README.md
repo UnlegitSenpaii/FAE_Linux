@@ -1,6 +1,8 @@
 # FAE_Linux
 Factorio Achievement Enabler for Linux
 
+With this you can get steam achievements while playing the game with mods.
+
 ## Usage
 Get the executable file from the release tab and run it with the factorio path as a parameter. <br>
 Example: <br>
