@@ -48,8 +48,8 @@ Replace `STEAM_USERNAME` with your logon name in steam (you might have to have s
 [more](https://developer.valvesoftware.com/wiki/SteamCMD#Creating_a_Script)
 
 ### Running the script
-Finally, run the script with `steamcmd +runscript update_factorio_x64_windows.txt`
-After downloading, the script files can be found in ~/factorio_windows_x64
+Finally, run the script with `steamcmd +runscript update_factorio_x64_windows.txt` <br>
+After downloading, the game files can be found in ~/factorio_windows_x64
 
 [steam cmd documentation](https://developer.valvesoftware.com/wiki/SteamCMD)<br>
 
