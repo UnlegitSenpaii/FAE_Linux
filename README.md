@@ -20,7 +20,7 @@ If there is an update you can just compare the old and new file versions, no nee
 *ghidra doesnt support DWARF 5 :( (as of 30.12.2022)* <br>
 
 ## Credits
-[CLion / IntelliJ (Best IDE)](https://www.jetbrains.com/clion/)<br>
+[CLion (Best IDE)](https://www.jetbrains.com/clion/)<br>
 [Ghidra (Tool used for RE)](https://github.com/NationalSecurityAgency/ghidra)<br>
 [oorzkws FAE for Windows (for the Patterns :) )](https://github.com/oorzkws/FactorioAchievementEnabler)<br>
 
