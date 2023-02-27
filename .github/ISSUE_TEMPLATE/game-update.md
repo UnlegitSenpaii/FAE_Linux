@@ -7,6 +7,9 @@ assignees: ''
 
 ---
 
+**Layer 8 Handler**
+Did you rerun the patcher after updating?
+
 **Game Information:**
  - Factorio Version: 1.1.72
 
