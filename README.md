@@ -17,7 +17,7 @@ Tested on OS: Arch Linux x86_64 Kernel: 6.0.12-arch1-1
 Get the patterns from ghidra.<br>
 I used the windows patterns as a reference, this makes it very easy to find the patterns.<br>
 If there is an update you can just compare the old and new file versions, no need to use the windows version. <br>
-*ghidra improved their DWARF 5 support :) (as of 06.03.2023)* <br>
+* Error during DWARFAnalyzer import: Only DWARF version 2, 3, or 4 information is currently supported (detected 5). (as of 06.03.2023)* <br>
 
 ## Credits
 [CLion (Best IDE)](https://www.jetbrains.com/clion/)<br>
