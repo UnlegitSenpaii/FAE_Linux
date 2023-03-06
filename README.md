@@ -1,19 +1,26 @@
 # FAE_Linux
 Factorio Achievement Enabler for Linux
 
+With this you can get steam achievements while playing the game with mods.
+
 ## Usage
 Get the executable file from the release tab and run it with the factorio path as a parameter. <br>
 Example: <br>
 `./FAE_Linux /home/senpaii/steamdrives/nvme1/SteamLibrary/steamapps/common/Factorio/bin/x64/factorio`
 
+## Building
+You can build the binary yourself using `cmake CMakeLists.txt`.
+
 ## Notes
+Tested on OS: Arch Linux x86_64 Kernel: 6.0.12-arch1-1 
+
 Get the patterns from ghidra.<br>
 I used the windows patterns as a reference, this makes it very easy to find the patterns.<br>
 If there is an update you can just compare the old and new file versions, no need to use the windows version. <br>
-*ghidra doesnt support DWARF 5 :( (as of 30.12.2022)* <br>
+Error during DWARFAnalyzer import: Only DWARF version 2, 3, or 4 information is currently supported (detected 5). (as of 06.03.2023)  :( <br>
 
 ## Credits
-[CLion / IntelliJ (Best IDE)](https://www.jetbrains.com/clion/)<br>
+[CLion (Best IDE)](https://www.jetbrains.com/clion/)<br>
 [Ghidra (Tool used for RE)](https://github.com/NationalSecurityAgency/ghidra)<br>
 [oorzkws FAE for Windows (for the Patterns :) )](https://github.com/oorzkws/FactorioAchievementEnabler)<br>
 
@@ -41,10 +48,8 @@ Replace `STEAM_USERNAME` with your logon name in steam (you might have to have s
 [more](https://developer.valvesoftware.com/wiki/SteamCMD#Creating_a_Script)
 
 ### Running the script
-Before running, you have to create the installation directory<br>
-`mkdir ./factorio_steam_windows_x64_windows`
-
-Finally, run the script with `steamcmd +runscript update_factorio_x64_windows.txt`
+Finally, run the script with `steamcmd +runscript update_factorio_x64_windows.txt` <br>
+After downloading, the game files can be found in ~/factorio_windows_x64
 
 [steam cmd documentation](https://developer.valvesoftware.com/wiki/SteamCMD)<br>
 
