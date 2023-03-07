@@ -1,7 +1,7 @@
 #include "patching.hpp"
 
-bool Patcher::ReplaceHexPattern(const std::string& filePath, const std::vector<std::uint8_t>& searchPattern,
-		const std::vector<std::uint8_t>& replacePattern)
+bool Patcher::ReplaceHexPattern(const std::string& filePath, const std::vector <std::uint8_t>& searchPattern,
+		const std::vector <std::uint8_t>& replacePattern)
 {
 	if (searchPattern.size() != replacePattern.size())
 	{
@@ -25,7 +25,7 @@ bool Patcher::ReplaceHexPattern(const std::string& filePath, const std::vector<s
 		return false;
 	}
 
-	std::vector<std::uint8_t> buffer(kBufferSize);
+	std::vector <std::uint8_t> buffer(kBufferSize);
 
 	while (inputFile.read(reinterpret_cast<char*>(buffer.data()), kBufferSize))
 	{
@@ -77,23 +77,37 @@ bool Patcher::ReplaceHexPattern(const std::string& filePath, const std::vector<s
 }
 
 
-std::vector<std::uint8_t>
-Patcher::GenerateReplacePattern(const std::vector<std::uint8_t>& searchPattern, bool doJNZInstruction)
+std::vector <std::uint8_t> Patcher::GenerateReplacePattern(const std::vector <std::uint8_t>& searchPattern, int replaceInstruction)
 {
 	if (searchPattern.size() < 2)
 		return {};
 
-	std::vector<std::uint8_t> replacePattern;
+	std::vector <std::uint8_t> replacePattern;
 
-	//Check for JZ instruction: (0x74 or 0x84)
-	if (searchPattern[0] != 0x74 && searchPattern[0] != 0x84)
-		return {};
 
-	// Replace the JZ instruction with a JNZ (0x75 or 0x85) or JMP (0xEB) instruction
-	if (doJNZInstruction)
+	//do I get paid for writing this in a clean way? no. do I get paid at all? no. :(
+	switch (replaceInstruction)
+	{
+	case 0://JZ -> JNZ (0x75 or 0x85) instruction
+		if (searchPattern[0] != 0x74 && searchPattern[0] != 0x84) //Check for JZ (0x74 or 0x84)
+			return {};
 		replacePattern.push_back(searchPattern[0] == 0x74 ? 0x75 : 0x85);
-	else
+		break;
+	case 1://JZ -> JMP (0xEB) instruction
+		if (searchPattern[0] != 0x74 && searchPattern[0] != 0x84) //Check for JZ
+			return {};
 		replacePattern.push_back(0xEB);
+		break;
+	case 2://JNZ (0F 85)-> JMP ~ huh?
+		if (searchPattern[0] != 0x0F && searchPattern[1] != 0x85) //Check for JNZ (0F 85)
+			return {};
+		replacePattern.push_back(0xEB);
+		break;
+	default:
+		std::cerr << "[FAE]" << "Error: Patch Instruction Mode '" << replaceInstruction << " not implemented yet!"
+		          << std::endl;
+		return {};
+	}
 
 	replacePattern.insert(replacePattern.end(), searchPattern.begin() + 1, searchPattern.end());
 	return replacePattern;
