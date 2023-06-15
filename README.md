@@ -14,7 +14,7 @@ You can build the binary yourself using `cmake CMakeLists.txt`.
 ## Notes
 Tested on OS: Arch Linux x86_64 Kernel: 6.0.12-arch1-1 
 
-Tested by @Jano1312 oon Factorio Version 1.1.80
+Tested by @Jano1312 on Factorio Version 1.1.80
 
 Get the patterns from ghidra.<br>
 I used the windows patterns as a reference, this makes it very easy to find the patterns.<br>
