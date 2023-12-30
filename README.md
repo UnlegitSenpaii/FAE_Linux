@@ -21,6 +21,10 @@ I used the windows patterns as a reference, this makes it very easy to find the 
 If there is an update you can just compare the old and new file versions, no need to use the windows version. <br>
 Error during DWARFAnalyzer import: Only DWARF version 2, 3, or 4 information is currently supported (detected 5). (as of 06.03.2023)  :( <br>
 
+The tool doesn't currently remove the "The game is modded." message, but that's on the roadmap for future updates. <br>
+The necessary patterns for this are ```AchievementGUI::AchievementGUI``` and ```PlayerData::PlayerData```. <br>
+Despite the warning in-game, the patch is functional, and you should still be able to unlock achievements. <br>
+
 ## Credits
 [CLion (Best IDE)](https://www.jetbrains.com/clion/)<br>
 [Ghidra (Tool used for RE)](https://github.com/NationalSecurityAgency/ghidra)<br>
