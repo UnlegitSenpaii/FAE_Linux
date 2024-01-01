@@ -12,9 +12,7 @@ Example: <br>
 You can build the binary yourself using `cmake CMakeLists.txt`.
 
 ## Notes
-Tested on OS: Arch Linux x86_64 Kernel: 6.0.12-arch1-1 
-
-Tested by @Jano1312 on Factorio Version 1.1.80
+You can find the results of tests in the latest release notes.
 
 Get the patterns from ghidra.<br>
 I used the windows patterns as a reference, this makes it very easy to find the patterns.<br>
