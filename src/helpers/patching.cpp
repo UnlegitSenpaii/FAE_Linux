@@ -88,10 +88,9 @@ std::vector<std::uint8_t> Patcher::GenerateReplacePattern(const std::vector<std:
             replacePattern.push_back(0xEB);
             break;
 
-        case 3://CMOVNZ (0F 45) -> CMOVZ (0F 44)
-            if (searchPattern[0] != 0x0F && searchPattern[1] != 0x45) //Check for CMOVNZ (0F 45)
+        case 3://CMOVNZ (0F 45) -> CMOVZ (0F 44) -- Prefix (0f) discarded!!
+            if (searchPattern[0] != 0x45) //Check for CMOVNZ (0F 45) -- Prefix (0f) discarded!!
                 return {};
-            replacePattern.push_back(0x0F);
             replacePattern.push_back(0x44);
             break;
 

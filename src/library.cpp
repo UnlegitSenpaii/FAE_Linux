@@ -18,14 +18,14 @@
  * 74 6e 0f 1f 44 00 00 48 8b 10
  *
  * AchievementGui::AchievementGui jz > jnz
- * 0f 84 d8 04 00 00 0f 1f 00
+ * 84 d8 04 00 00 0f 1f 00
  *
  * ModManager::isVanilla // modifying this directly might break stuff
  * -> this function is used in the linux version in PlayerData to determine if the game is modded or not.
  * In Windows, it's not (or the compiler optimizes it out)
  *
- * PlayerData::PlayerData CMOVNZ > CMOVZ
- * 0f 45 f0 e8 bf a8 43 01
+ * PlayerData::PlayerData CMOVNZ > CMOVZ -- Prefix (0f) discarded!!
+ * 45 f0 e8 bf a8 43 01
  *
  * SteamContext::setStat jz > jmp
  * 74 2b 66 90 48 8b 10 80 7a 3e 00 74 17
@@ -39,7 +39,7 @@
 
 std::unordered_map<std::string, std::vector<uint8_t>> patternsToJNZ{
         {"SteamContext::onUserStatsReceived", {0x74, 0x6e, 0x0f, 0x1f, 0x44, 0x00, 0x00, 0x48, 0x8b, 0x10}},
-        {"AchievementGui::AchievementGui",    {0x0f, 0x84, 0xd8, 0x04, 0x00, 0x00, 0x0f, 0x1f, 0x00}}
+        {"AchievementGui::AchievementGui",    {0x84, 0xd8, 0x04, 0x00, 0x00, 0x0f, 0x1f, 0x00}}
 };
 
 std::unordered_map<std::string, std::vector<uint8_t>> patternsToJMPFromJNZ{
@@ -52,7 +52,7 @@ std::unordered_map<std::string, std::vector<uint8_t>> patternsToJMP{
 };
 
 std::unordered_map<std::string, std::vector<uint8_t>> patternsToCMOVZ{
-        {"PlayerData::PlayerData", {0x0f, 0x45, 0xf0, 0xe8, 0xbf, 0xa8, 0x43, 0x01}}
+        {"PlayerData::PlayerData", {0x45, 0xf0, 0xe8, 0xbf, 0xa8, 0x43, 0x01}}
 };
 
 //Usage Example: ./FAE_Linux /home/senpaii/steamdrives/nvme1/SteamLibrary/steamapps/common/Factorio/bin/x64/factorio
