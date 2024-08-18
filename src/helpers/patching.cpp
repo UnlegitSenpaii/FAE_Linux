@@ -21,6 +21,7 @@ bool Patcher::ReplaceHexPattern(const std::string &filePath, const std::vector<s
     }
 
     std::vector<std::uint8_t> buffer(kBufferSize);
+    int matchesFound = 0;
 
     while (inputFile.read(reinterpret_cast<char *>(buffer.data()), kBufferSize)) {
         std::size_t bufferPos = 0;
@@ -33,7 +34,8 @@ bool Patcher::ReplaceHexPattern(const std::string &filePath, const std::vector<s
 
             bool match = true;
             for (std::size_t i = 0; i < searchPattern.size(); ++i) {
-                if (buffer[bufferPos + i] != searchPattern[i]) {
+                if (buffer[bufferPos + i] != searchPattern[i])
+                {
                     match = false;
                     break;
                 }
@@ -47,6 +49,7 @@ bool Patcher::ReplaceHexPattern(const std::string &filePath, const std::vector<s
 
             outputFile.write(reinterpret_cast<const char *>(replacePattern.data()), replacePattern.size());
             bufferPos += searchPattern.size();
+            ++matchesFound;
         }
     }
 
@@ -58,7 +61,9 @@ bool Patcher::ReplaceHexPattern(const std::string &filePath, const std::vector<s
         return false;
     }
 
-    return true;
+    std::cout << " " << matchesFound << " matches for the pattern." << std::endl;
+
+    return matchesFound > 0;
 }
 
 
@@ -82,8 +87,9 @@ std::vector<std::uint8_t> Patcher::GenerateReplacePattern(const std::vector<std:
             replacePattern.push_back(0xEB);
             break;
 
-        case 2://JNZ (0F 85)-> JMP ~ huh? im surprised this doesn't break stuff
-            if (searchPattern[0] != 0x0F && searchPattern[1] != 0x85) //Check for JNZ (0F 85)
+        case 2:// JNZ (0F 85)-> JMP ~ huh? im surprised this doesn't break stuff -- it did indeed break stuff
+            if (searchPattern[0] != 0x0F && searchPattern[1] != 0x85 && // Check for JNZ (0F 85)
+                searchPattern[0] != 0x75)                               // Check for JNZ SHORT (75)
                 return {};
             replacePattern.push_back(0xEB);
             break;
@@ -99,6 +105,6 @@ std::vector<std::uint8_t> Patcher::GenerateReplacePattern(const std::vector<std:
             return {};
     }
 
-    replacePattern.insert(replacePattern.end(), searchPattern.begin() + 1, searchPattern.end());
+    replacePattern.insert(replacePattern.end(), searchPattern.begin() + replacePattern.size(), searchPattern.end());
     return replacePattern;
 }

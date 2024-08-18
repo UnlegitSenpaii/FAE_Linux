@@ -15,44 +15,44 @@
  *
  * Patterns:
  * SteamContext::onUserStatsReceived jz > jnz
- * 74 6e 0f 1f 44 00 00 48 8b 10
+ * 74 73 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 48 8b 10
  *
  * AchievementGui::AchievementGui jz > jnz
- * 84 d8 04 00 00 0f 1f 00
+ * 84 8a 03 00 00 0f 1f 44 00
  *
  * ModManager::isVanilla // modifying this directly might break stuff
  * -> this function is used in the linux version in PlayerData to determine if the game is modded or not.
  * In Windows, it's not (or the compiler optimizes it out)
  *
  * PlayerData::PlayerData CMOVNZ > CMOVZ -- Prefix (0f) discarded!!
- * 45 f0 e8 bf a8 43 01
+ * 45 f0 e8 12 e7 2f 01
  *
  * SteamContext::setStat jz > jmp
- * 74 2b 66 90 48 8b 10 80 7a 3e 00 74 17
+ * 74 2d ?? ?? ?? ?? 48 8b 10 80 7a 3e 00 74 17 80 7a 40 00 74 11 80 7a
  *
  * SteamContext::unlockAchievement jz > jmp
  * 74 29 48 8b 10 80 7a 3e 00 74 17
  *
  * AchievementGui::allowed (map) jnz > jmp
- * 0f 85 7a ff ff ff 48 8b bb d0 03 00 00 b8 01
+ * 75 86 80 bb ef 01 00 00 00 0f 85 79 ff ff ff
  */
-
-std::unordered_map<std::string, std::vector<uint8_t>> patternsToJNZ{
-        {"SteamContext::onUserStatsReceived", {0x74, 0x6e, 0x0f, 0x1f, 0x44, 0x00, 0x00, 0x48, 0x8b, 0x10}},
-        {"AchievementGui::AchievementGui",    {0x84, 0xd8, 0x04, 0x00, 0x00, 0x0f, 0x1f, 0x00}}
+// TODO: Implement placeholders for the patterns
+std::unordered_map<std::string, std::vector<uint8_t>> patternsToJNZ {
+    {"SteamContext::onUserStatsReceived", {0x74, 0x73, 0x66, 0x2e, 0x0f, 0x1f, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8b, 0x10}},
+    {"AchievementGui::AchievementGui", {0x84, 0x8a, 0x03, 0x00, 0x00, 0x0f, 0x1f, 0x44, 0x00}}
 };
 
-std::unordered_map<std::string, std::vector<uint8_t>> patternsToJMPFromJNZ{
-        {"AchievementGui::allowed", {0x0f, 0x85, 0x7a, 0xff, 0xff, 0xff, 0x48, 0x8b, 0xbb, 0xd0, 0x03, 0x00, 0x00, 0xb8, 0x01}}
+std::unordered_map<std::string, std::vector<uint8_t>> patternsToJMPFromJNZ {
+    {"AchievementGui::allowed", {0x75, 0x86, 0x80, 0xbb, 0xef, 0x01, 0x00, 0x00, 0x00, 0x0f, 0x85, 0x79, 0xff, 0xff, 0xff}}
 };
 
-std::unordered_map<std::string, std::vector<uint8_t>> patternsToJMP{
-        {"SteamContext::setStat",           {0x74, 0x2b, 0x66, 0x90, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00, 0x74, 0x17}},
-        {"SteamContext::unlockAchievement", {0x74, 0x29, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00, 0x74, 0x17}}
+std::unordered_map<std::string, std::vector<uint8_t>> patternsToJMP {
+    {"SteamContext::setStat", {0x74, 0x2d, 0x0f, 0x1f, 0x40, 0x00, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00, 0x74, 0x17, 0x80, 0x7a, 0x40, 0x00, 0x74, 0x11, 0x80, 0x7a}},
+    {"SteamContext::unlockAchievement", {0x74, 0x29, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00, 0x74, 0x17}}
 };
 
-std::unordered_map<std::string, std::vector<uint8_t>> patternsToCMOVZ{
-        {"PlayerData::PlayerData", {0x45, 0xf0, 0xe8, 0xbf, 0xa8, 0x43, 0x01}}
+std::unordered_map<std::string, std::vector<uint8_t>> patternsToCMOVZ {
+    {"PlayerData::PlayerData", {0x45, 0xf0, 0xe8, 0x12, 0xe7, 0x2f, 0x01}}
 };
 
 //Usage Example: ./FAE_Linux /home/senpaii/steamdrives/nvme1/SteamLibrary/steamapps/common/Factorio/bin/x64/factorio
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     }
 
     Log::LogF("Patching instructions to CMOVZ from CMOVNZ..\n");
-    for (auto &patternPair: patternsToCMOVZ) {
+    for (auto &patternPair : patternsToCMOVZ) {
         doPatching(factorioFilePath, patternPair, 3);
     }
 
