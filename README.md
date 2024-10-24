@@ -19,7 +19,7 @@ I used the windows patterns as a reference, this makes it very easy to find the 
 If there is an update you can just compare the old and new file versions, no need to use the windows version. <br>
 
 ## Credits
-[CLion (Best IDE)](https://www.jetbrains.com/clion/)<br>
+[VSCode](https://code.visualstudio.com/)<br>
 [Ghidra (Tool used for RE)](https://github.com/NationalSecurityAgency/ghidra)<br>
 [oorzkws FAE for Windows (for the Patterns :) )](https://github.com/oorzkws/FactorioAchievementEnabler)<br>
 
