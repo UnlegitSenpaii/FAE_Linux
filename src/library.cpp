@@ -12,6 +12,7 @@
 /*
  * note to self: decompiling factorio windows on linux takes ages
  *               it also does on windows :(
+ *               haha, not if i close all windows in ghidra
  *
  * Patterns:
  * SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
@@ -37,18 +38,18 @@
  * note for me: this is the achievements.dat & achievements-modded.dat thingy
  * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat 
  * PlayerData::PlayerData
- * 45 f0 e8 f9 30 f4 fe     CMOVNZ > CMOVZ
+ * 45 f0 e8 d9 0c           CMOVNZ > CMOVZ
  * 
  * PlayerData::PlayerData 2 changed how it does the achievement check with a null check for *(char *)(global + 0x310)  i think..?  -- prolly not needed
  * 0f 84 35 07 00 00 48 81 c4 e8 26 00 00 -- jz > jnz
  *
  * SteamContext::setStat jz > jmp
  * 74 2d ?? ?? ?? ?? 48 8b 10 80 7a 3e 00 74 17 80 7a 40 00 74 11 80 7a
- * -> maybe patched by return in 0x0129b7c0 - todo: check that.. somehow..
  *
- * SteamContext::unlockAchievement jz > jmp
- * 74 29 48 8b 10 80 7a 3e 00 74 17
- * -> maybe patched by return in 0x013a31d0 - todo: check that.. somehow..
+ * not needed anymore
+ * SteamContext::unlockAchievement jz > jmp 
+ * 74 2d 0f 1f 40 00 48 8b 10 80 7a 3e 00
+ * 
  *
  * AchievementGui::allowed (map) jz > jmp
  * 74 17 48 83 78 20 00
@@ -59,7 +60,6 @@
 std::unordered_map<std::string, std::vector<uint8_t>> patternsJZToJNZ {
     {"SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally", { 0x74, 0x34, 0x0f, 0x1f, 0x00, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00 }},
     {"SteamContext::updateAchievementStatsFromSteam", {0x74, 0x30, 0x0f, 0x1f, 0x80, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8b, 0x10}}, 
-    //{"PlayerData::PlayerData", {0x84, 0x35, 0x07, 0x00, 0x00, 0x48, 0x81, 0xc4, 0xe8, 0x26, 0x00, 0x00}} //prefix discarded
 };
 
 std::unordered_map<std::string, std::vector<uint8_t>> patternsToJMPFromJNZ {
@@ -67,14 +67,13 @@ std::unordered_map<std::string, std::vector<uint8_t>> patternsToJMPFromJNZ {
 };
 
 std::unordered_map<std::string, std::vector<uint8_t>> patternsJZToJMP {
-    {"SteamContext::setStat", {0x74, 0x2d, 0x0f, 0x1f, 0x40, 0x00, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00, 0x74, 0x17, 0x80, 0x7a, 0x40, 0x00, 0x74, 0x11, 0x80, 0x7a}},
-    {"SteamContext::unlockAchievement", {0x74, 0x29, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00, 0x74, 0x17}},
+    {"SteamContext::setStat & SteamContext::unlockAchievement", {0x74, 0x2d, 0x0f, 0x1f, 0x40, 0x00, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00, 0x74, 0x17, 0x80, 0x7a, 0x40, 0x00, 0x74, 0x11, 0x80, 0x7a}},
     {"AchievementGui::allowed", {0x74, 0x17, 0x48, 0x83, 0x78, 0x20, 0x00}},
     {"AchievementGui::allowed2", {0x74, 0x10, 0x31, 0xc0, 0x5b, 0x41, 0x5c, 0x41, 0x5d, 0x41, 0x5e}},
 };
 
 std::unordered_map<std::string, std::vector<uint8_t>> patternsToCMOVZ {
-    {"PlayerData::PlayerData", {0x45, 0xF0, 0xE8, 0xF9, 0x30, 0xF4, 0xFE}}
+    {"PlayerData::PlayerData", {0x45, 0xF0, 0xE8, 0xD9, 0x0C}}
 };
 
 //Usage Example: ./FAE_Linux ./factorio
@@ -129,8 +128,18 @@ int main(int argc, char *argv[]) {
     }
 
     Log::LogF("Patching instructions to CMOVZ from CMOVNZ..\n");
-    for (auto &patternPair : patternsToCMOVZ) {
-        doPatching(factorioFilePath, patternPair, 3);
+ 
+    std::string userInput = "";
+    Log::LogF("Do you want to use the modded achievement save? (y/N)\n");
+    std::getline(std::cin, userInput);
+
+    if (userInput.empty() || std::tolower(userInput[0]) == 'n') {
+        Log::LogF("Using vanilla achievements.dat\n");
+        for (auto &patternPair : patternsToCMOVZ) {
+            doPatching(factorioFilePath, patternPair, 3);
+        }
+    } else {
+        Log::LogF("Using modded achievements.dat\n");
     }
 
     Log::LogF("Marking Factorio as an executable..\n");
