@@ -81,7 +81,7 @@ std::unordered_map<std::string, std::vector<uint8_t>> patternsToCMOVZ {
     {"PlayerData::PlayerData", {0x45, 0xF0, 0xE8, 0xD9, 0x0C}}
 };
 
-//Usage Example: ./FAE_Linux ./factorio
+//Usage Example: ./fae ./factorio
 
 void doPatching(
     const std::string& factorioFilePath,
