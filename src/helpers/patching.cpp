@@ -1,7 +1,10 @@
 #include "patching.hpp"
 
-bool Patcher::ReplaceHexPattern(const std::string &filePath, const std::vector<std::uint8_t> &searchPattern, const std::vector<std::uint8_t> &replacePattern) {
-
+bool Patcher::ReplaceHexPattern(
+    const std::string& filePath,
+    const std::vector<std::uint8_t>& searchPattern,
+    const std::vector<std::uint8_t>& replacePattern)
+{
     if (searchPattern.size() != replacePattern.size()) {
         std::cerr << "[FAE]" << "Error: Search and replace patterns must be the same size." << std::endl;
         return false;
@@ -23,7 +26,7 @@ bool Patcher::ReplaceHexPattern(const std::string &filePath, const std::vector<s
     std::vector<std::uint8_t> buffer(kBufferSize);
     int matchesFound = 0;
 
-    while (inputFile.read(reinterpret_cast<char *>(buffer.data()), kBufferSize)) {
+    while (inputFile.read(reinterpret_cast<char*>(buffer.data()), kBufferSize)) {
         std::size_t bufferPos = 0;
         while (bufferPos < kBufferSize) {
             if (buffer[bufferPos] != searchPattern[0]) {
@@ -47,7 +50,7 @@ bool Patcher::ReplaceHexPattern(const std::string &filePath, const std::vector<s
                 continue;
             }
 
-            outputFile.write(reinterpret_cast<const char *>(replacePattern.data()), replacePattern.size());
+            outputFile.write(reinterpret_cast<const char*>(replacePattern.data()), replacePattern.size());
             bufferPos += searchPattern.size();
             ++matchesFound;
         }
@@ -66,8 +69,10 @@ bool Patcher::ReplaceHexPattern(const std::string &filePath, const std::vector<s
     return matchesFound > 0;
 }
 
-
-std::vector<std::uint8_t> Patcher::GenerateReplacePattern(const std::vector<std::uint8_t> &searchPattern, int replaceInstruction) {
+std::vector<std::uint8_t> Patcher::GenerateReplacePattern(
+    const std::vector<std::uint8_t>& searchPattern,
+    int replaceInstruction)
+{
     if (searchPattern.size() < 2)
         return {};
 

@@ -7,17 +7,16 @@
 
 namespace Log
 {
-	static std::string LogFileName;
-	static bool SaveToFile = false;
+    static std::string LogFileName;
+    static bool SaveToFile = false;
 
-	void Initialize(const std::string&, bool);
+    void Initialize(const std::string&, bool);
 
-	void PrintSmugAstolfo();
+    void PrintSmugAstolfo();
 
-	void PrintAsciiArtWelcome();
+    void PrintAsciiArtWelcome();
 
-	void LogF(const char* fmt, ...);
+    void LogF(const char* fmt, ...);
 }
-
 
 #endif //FACTORIOACHIEVEMENTENABLER_LINUX_LOGGING_HPP

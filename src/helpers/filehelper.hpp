@@ -11,9 +11,9 @@
 
 namespace FileHelper
 {
-	bool DoesFileExist(const std::string& name);
+    bool DoesFileExist(const std::string& name);
 
-	bool MarkFileExecutable(const std::string& file_path);
+    bool MarkFileExecutable(const std::string& file_path);
 } // FileHelper
 
 #endif //FAE_LINUX_FILEHELPER_HPP
