@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 3.25)
 project(FactorioAchievementEnabler)
 
+set(CMAKE_INCLUDE_CURRENT_DIR On)
+
 add_executable(fae
-    src/helpers/filehelper.cpp
-    src/helpers/filehelper.hpp
-    src/helpers/logging.cpp
-    src/helpers/logging.hpp
-    src/helpers/patching.cpp
-    src/helpers/patching.hpp
-    src/main.cpp)
+    fae/filehelper.cpp
+    fae/filehelper.hpp
+    fae/logging.cpp
+    fae/logging.hpp
+    fae/patching.cpp
+    fae/patching.hpp
+    fae/main.cpp)
 
 target_compile_features(fae
     PRIVATE

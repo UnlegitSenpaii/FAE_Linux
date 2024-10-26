@@ -1,9 +1,9 @@
 #include <vector>
 #include <unordered_map>
 #include <unistd.h>
-#include "helpers/logging.hpp"
-#include "helpers/filehelper.hpp"
-#include "helpers/patching.hpp"
+#include <fae/logging.hpp>
+#include <fae/filehelper.hpp>
+#include <fae/patching.hpp>
 
 #define RELEASE_VERSION 1
 

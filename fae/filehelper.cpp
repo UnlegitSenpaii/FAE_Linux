@@ -2,7 +2,7 @@
 #include <cstring>
 #include <iostream>
 #include <sys/stat.h>
-#include "filehelper.hpp"
+#include <fae/filehelper.hpp>
 
 bool FileHelper::DoesFileExist(const std::string& name)
 {

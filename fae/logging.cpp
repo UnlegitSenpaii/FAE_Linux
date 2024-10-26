@@ -1,7 +1,7 @@
-#include "logging.hpp"
 #include <cstdarg>
 #include <fstream>
 #include <iostream>
+#include <fae/logging.hpp>
 
 namespace Log
 {

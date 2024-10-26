@@ -1,6 +1,6 @@
 #include <fstream>
 #include <iostream>
-#include "patching.hpp"
+#include <fae/patching.hpp>
 
 bool Patcher::ReplaceHexPattern(
     const std::string& filePath,
