@@ -1,3 +1,5 @@
+#include <fstream>
+#include <iostream>
 #include "patching.hpp"
 
 bool Patcher::ReplaceHexPattern(

@@ -1,7 +1,6 @@
-#include <iostream>
 #include <vector>
-#include <unistd.h>
 #include <unordered_map>
+#include <unistd.h>
 #include "helpers/logging.hpp"
 #include "helpers/filehelper.hpp"
 #include "helpers/patching.hpp"

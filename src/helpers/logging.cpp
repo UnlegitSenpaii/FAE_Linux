@@ -1,4 +1,6 @@
 #include "logging.hpp"
+#include <cstdarg>
+#include <fstream>
 #include <iostream>
 
 namespace Log

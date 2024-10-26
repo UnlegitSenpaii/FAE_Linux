@@ -1,9 +1,7 @@
 #ifndef FACTORIOACHIEVEMENTENABLER_LINUX_LOGGING_HPP
 #define FACTORIOACHIEVEMENTENABLER_LINUX_LOGGING_HPP
 
-#include <cstdarg>
 #include <string>
-#include <fstream>
 
 namespace Log
 {

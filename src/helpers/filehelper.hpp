@@ -1,13 +1,7 @@
 #ifndef FAE_LINUX_FILEHELPER_HPP
 #define FAE_LINUX_FILEHELPER_HPP
 
-#include <iostream>
-#include <vector>
-#include <cstdint>
-#include <fstream>
-#include <sys/stat.h>
-#include <cerrno>
-#include <cstring>
+#include <string>
 
 namespace FileHelper
 {

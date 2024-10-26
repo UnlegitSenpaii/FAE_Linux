@@ -1,12 +1,9 @@
 #ifndef FAE_LINUX_PATCHING_HPP
 #define FAE_LINUX_PATCHING_HPP
 
-#include <iostream>
-#include <vector>
 #include <cstdint>
-#include <fstream>
-#include <cerrno>
-#include <cstring>
+#include <string>
+#include <vector>
 
 namespace Patcher
 {
