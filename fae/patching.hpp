@@ -5,8 +5,6 @@
 
 namespace Patcher
 {
-    constexpr std::size_t kBufferSize = 1024;
-
     bool ReplaceHexPattern(
         std::vector<std::uint8_t>& data,
         const std::vector<std::uint8_t>& searchPattern,
