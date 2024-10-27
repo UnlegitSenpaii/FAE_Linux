@@ -6,9 +6,6 @@
 #include "helpers/filehelper.hpp"
 #include "helpers/patching.hpp"
 
-
-#define RELEASE_VERSION 1
-
 /*
  * note to self: decompiling factorio windows on linux takes ages
  *               it also does on windows :(
@@ -95,15 +92,12 @@ int main(int argc, char *argv[]) {
     Log::Initialize("./FAE_Debug.log", false);
     Log::LogF("Initialized Logging.\n");
 
-#ifdef RELEASE_VERSION
     if (argc < 2) {
         Log::LogF("Incorrect Usage!\nUsage: %s [Factorio File Path]", argv[0]);
         return 1;
     }
     std::string factorioFilePath = argv[1];
-#else
-    std::string factorioFilePath = "/home/senpaii/steamdrives/nvme1/SteamLibrary/steamapps/common/Factorio/bin/x64/factorio";
-#endif
+
     if (!FileHelper::DoesFileExist(factorioFilePath)) {
         Log::LogF("The provided filepath is incorrect.\n");
         return 1;
@@ -147,9 +141,8 @@ int main(int argc, char *argv[]) {
         Log::LogF("Failed to mark factorio as an executable!\nYou can do this yourself too, with 'chmod +x ./factorio'\n");
         return 1;
     }
-#ifdef RELEASE_VERSION
+
     usleep(2800 * 1000);
     Log::PrintSmugAstolfo();
-#endif
     return 0;
 }
