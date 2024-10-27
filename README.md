@@ -9,7 +9,15 @@ Example: <br>
 `./FAE_Linux /home/senpaii/steamdrives/nvme1/SteamLibrary/steamapps/common/Factorio/bin/x64/factorio`
 
 ## Building
-You can build the binary yourself using `cmake CMakeLists.txt`.
+You can build the binary yourself using `cmake CMakeLists.txt` followed with `make`.
+
+## Contribution Guidelines
+
+- **Major cosmetic changes** will not be accepted and will be **rejected**.
+- Small, meaningful changes such as **pattern updates**, fixing typos or minor functionality improvements are **welcome**.
+- Pull requests that introduce **large, sweeping changes** that are difficult to review will be rejected **without comment**, due to **security and maintainability concerns**.
+
+Please ensure your contributions are focused, clear, and easy to review. Thank you for your understanding!
 
 ## Notes
 You can find the results of tests in the latest release notes.
