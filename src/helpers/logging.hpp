@@ -1,5 +1,4 @@
-#ifndef FACTORIOACHIEVEMENTENABLER_LINUX_LOGGING_HPP
-#define FACTORIOACHIEVEMENTENABLER_LINUX_LOGGING_HPP
+#pragma once
 
 #include <cstdarg>
 #include <string>
@@ -18,6 +17,3 @@ namespace Log
 
 	void LogF(const char* fmt, ...);
 }
-
-
-#endif //FACTORIOACHIEVEMENTENABLER_LINUX_LOGGING_HPP

@@ -1,5 +1,4 @@
-#ifndef FAE_LINUX_PATCHING_HPP
-#define FAE_LINUX_PATCHING_HPP
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -18,5 +17,3 @@ namespace Patcher
 	std::vector<std::uint8_t> GenerateReplacePattern(const std::vector<std::uint8_t>& searchPattern, int replaceInstruction);
 
 } // Patcher
-
-#endif //FAE_LINUX_PATCHING_HPP

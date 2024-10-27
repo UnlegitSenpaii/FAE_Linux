@@ -1,5 +1,4 @@
-#ifndef FAE_LINUX_FILEHELPER_HPP
-#define FAE_LINUX_FILEHELPER_HPP
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -15,5 +14,3 @@ namespace FileHelper
 
 	bool MarkFileExecutable(const std::string& file_path);
 } // FileHelper
-
-#endif //FAE_LINUX_FILEHELPER_HPP
