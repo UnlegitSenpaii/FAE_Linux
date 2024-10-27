@@ -9,7 +9,13 @@ Example: <br>
 `./FAE_Linux /.../SteamLibrary/steamapps/common/Factorio/bin/x64/factorio`
 
 ## Building
-You can build the binary yourself using `cmake CMakeLists.txt` followed with `make`.
+You can build the binary yourself using the following commands:
+```
+git clone https://github.com/UnlegitSenpaii/FAE_Linux.git
+cmake FAE_Linux/CMakeLists.txt
+make
+```
+The compiled binary can be found in the /out folder.
 
 ## Contribution Guidelines
 
