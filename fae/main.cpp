@@ -1,3 +1,5 @@
+#include <iostream>
+#include <filesystem>
 #include <vector>
 #include <unordered_map>
 #include <unistd.h>
@@ -81,7 +83,7 @@ std::unordered_map<std::string, std::vector<uint8_t>> patternsToCMOVZ {
 //Usage Example: ./fae ./factorio
 
 void doPatching(
-    const std::string& factorioFilePath,
+    std::vector<std::uint8_t>& data,
     const std::pair<std::string, std::vector<uint8_t>>& patternPair,
     int replaceInstruction)
 {
@@ -89,7 +91,7 @@ void doPatching(
     const std::vector<uint8_t> pattern = patternPair.second;
     const std::vector<uint8_t> replacementPattern = Patcher::GenerateReplacePattern(pattern, replaceInstruction);
     Log::LogF("Patching %s with following data:\n pattern:\t0x%x\n replacement pattern:\t0x%x\n", patternName.c_str(), pattern.data(), replacementPattern.data());
-    if (!Patcher::ReplaceHexPattern(factorioFilePath, pattern, replacementPattern)) {
+    if (!Patcher::ReplaceHexPattern(data, pattern, replacementPattern)) {
         Log::LogF(" -> FAILED!\n");
         return;
     }
@@ -98,6 +100,7 @@ void doPatching(
 
 int main(int argc, char* argv[])
 {
+    std::filesystem::path factorioFilePath;
     Log::PrintAsciiArtWelcome();
     Log::Initialize("./FAE_Debug.log", false);
     Log::LogF("Initialized Logging.\n");
@@ -107,31 +110,38 @@ int main(int argc, char* argv[])
         Log::LogF("Incorrect Usage!\nUsage: %s [Factorio File Path]", argv[0]);
         return 1;
     }
-    std::string factorioFilePath = argv[1];
+    factorioFilePath = argv[1];
 #else
-    std::string factorioFilePath = "/home/senpaii/steamdrives/nvme1/SteamLibrary/steamapps/common/Factorio/bin/x64/factorio";
+    factorioFilePath = (argc > 1)
+        ? argv[1]
+        : "/home/senpaii/steamdrives/nvme1/SteamLibrary/steamapps/common/Factorio/bin/x64/factorio";
 #endif
-    if (!FileHelper::DoesFileExist(factorioFilePath)) {
+
+    if (!std::filesystem::is_regular_file(factorioFilePath)) {
         Log::LogF("The provided filepath is incorrect.\n");
         return 1;
     }
     Log::LogF("Provided path exits.\n");
 
+    std::vector<std::uint8_t> data = FileHelper::read(factorioFilePath);
+
+    Log::LogF("File read\n");
+
     // I have a slight suspicion that this can be moved into a loop
 
     Log::LogF("Patching instructions to JNZ..\n");
     for (auto &patternPair: patternsJZToJNZ) {
-        doPatching(factorioFilePath, patternPair, 0);
+        doPatching(data, patternPair, 0);
     }
 
     Log::LogF("Patching instructions to JMP from JZ..\n");
     for (auto &patternPair: patternsJZToJMP) {
-        doPatching(factorioFilePath, patternPair, 1);
+        doPatching(data, patternPair, 1);
     }
 
     Log::LogF("Patching instructions to JMP from JNZ..\n");
     for (auto &patternPair: patternsToJMPFromJNZ) {
-        doPatching(factorioFilePath, patternPair, 2);
+        doPatching(data, patternPair, 2);
     }
 
     Log::LogF("Patching instructions to CMOVZ from CMOVNZ..\n");
@@ -143,11 +153,13 @@ int main(int argc, char* argv[])
     if (userInput.empty() || std::tolower(userInput[0]) == 'n') {
         Log::LogF("Using vanilla achievements.dat\n");
         for (auto &patternPair : patternsToCMOVZ) {
-            doPatching(factorioFilePath, patternPair, 3);
+            doPatching(data, patternPair, 3);
         }
     } else {
         Log::LogF("Using modded achievements.dat\n");
     }
+
+    FileHelper::write(factorioFilePath, data);
 
     Log::LogF("Marking Factorio as an executable..\n");
     if (!FileHelper::MarkFileExecutable(factorioFilePath)) {

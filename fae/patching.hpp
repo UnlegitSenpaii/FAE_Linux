@@ -2,7 +2,6 @@
 #define FAE_LINUX_PATCHING_HPP
 
 #include <cstdint>
-#include <string>
 #include <vector>
 
 namespace Patcher
@@ -10,7 +9,7 @@ namespace Patcher
     constexpr std::size_t kBufferSize = 1024;
 
     bool ReplaceHexPattern(
-        const std::string& file_path,
+        std::vector<std::uint8_t>& data,
         const std::vector<std::uint8_t>& searchPattern,
         const std::vector<std::uint8_t>& replacePattern);
 

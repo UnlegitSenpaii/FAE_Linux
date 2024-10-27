@@ -1,13 +1,15 @@
 #ifndef FAE_LINUX_FILEHELPER_HPP
 #define FAE_LINUX_FILEHELPER_HPP
 
-#include <string>
+#include <cstdint>
+#include <filesystem>
+#include <vector>
 
 namespace FileHelper
 {
-    bool DoesFileExist(const std::string& name);
-
-    bool MarkFileExecutable(const std::string& file_path);
+    std::vector<std::uint8_t> read(const std::filesystem::path& path);
+    void write(const std::filesystem::path& path, const std::vector<std::uint8_t>& data);
+    bool MarkFileExecutable(const std::filesystem::path& path);
 } // FileHelper
 
 #endif //FAE_LINUX_FILEHELPER_HPP
