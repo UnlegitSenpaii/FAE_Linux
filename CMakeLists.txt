@@ -15,5 +15,5 @@ add_executable(FAE_Linux
         src/helpers/logging.hpp
         src/helpers/patching.cpp
         src/helpers/patching.hpp
-        src/library.cpp)
+        src/fae_linux.cpp)
 
