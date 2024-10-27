@@ -7,10 +7,6 @@
 #include "helpers/patching.hpp"
 
 /*
- * note to self: decompiling factorio windows on linux takes ages
- *               it also does on windows :(
- *               haha, not if i close all windows in ghidra
- *
  * Patterns:
  * SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
  * 74 34 0f 1f 00 48 8b 10 80 7a 3e 00
@@ -54,6 +50,9 @@
  */
 
 // TODO: Implement placeholders for the patterns
+
+// imagine how funny a std::vector<std::tuple<Patcher::PATCH_TYPE, std::vector<std::pair<std::string, std::vector<uint8_t>>>>> would be
+
 std::unordered_map<std::string, std::vector<uint8_t>> patternsJZToJNZ {
     {"SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally", { 0x74, 0x34, 0x0f, 0x1f, 0x00, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00 }},
     {"SteamContext::updateAchievementStatsFromSteam", {0x74, 0x30, 0x0f, 0x1f, 0x80, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8b, 0x10}}, 
@@ -73,19 +72,18 @@ std::unordered_map<std::string, std::vector<uint8_t>> patternsToCMOVZ {
     {"PlayerData::PlayerData", {0x45, 0xF0, 0xE8, 0xD9, 0x0C}}
 };
 
-//Usage Example: ./FAE_Linux ./factorio
-
-void doPatching(const std::string &factorioFilePath, const std::pair<std::string, std::vector<uint8_t>> &patternPair, int replaceInstruction) {
+void doPatching(std::vector<std::uint8_t> &buffer, const std::pair<std::string, std::vector<uint8_t>> &patternPair, int replaceInstruction) {
     const std::string patternName = patternPair.first;
     const std::vector<uint8_t> pattern = patternPair.second;
     const std::vector<uint8_t> replacementPattern = Patcher::GenerateReplacePattern(pattern, replaceInstruction);
     Log::LogF("Patching %s with following data:\n pattern:\t0x%x\n replacement pattern:\t0x%x\n", patternName.c_str(), pattern.data(), replacementPattern.data());
-    if (!Patcher::ReplaceHexPattern(factorioFilePath, pattern, replacementPattern)) {
+    if (!Patcher::ReplaceHexPattern(buffer, pattern, replacementPattern)) {
         Log::LogF(" -> FAILED!\n");
         return;
     }
     Log::LogF(" -> SUCCESS!\n");
 }
+
 
 int main(int argc, char *argv[]) {
     Log::PrintAsciiArtWelcome();
@@ -93,7 +91,7 @@ int main(int argc, char *argv[]) {
     Log::LogF("Initialized Logging.\n");
 
     if (argc < 2) {
-        Log::LogF("Incorrect Usage!\nUsage: %s [Factorio File Path]", argv[0]);
+        Log::LogF("Incorrect Usage!\nUsage: %s [Factorio File Path]\n", argv[0]);
         return 1;
     }
     std::string factorioFilePath = argv[1];
@@ -102,38 +100,51 @@ int main(int argc, char *argv[]) {
         Log::LogF("The provided filepath is incorrect.\n");
         return 1;
     }
-    Log::LogF("Provided path exits.\n");
 
-    // I have a slight suspicion that this can be moved into a loop
+    Log::LogF("Reading factorio binary..\n");
+    std::vector<std::uint8_t> buffer;
+    if (!Patcher::ReadFileToBuffer(factorioFilePath, buffer)) {
+        Log::LogF("Failed to read factorio to buffer.\n");
+        return 1;
+    }
+
+    // I have a very slight suspicion that this can be moved into a single loop
+    // see line 64 in helpers/patching.cpp for the reason why
 
     Log::LogF("Patching instructions to JNZ..\n");
     for (auto &patternPair: patternsJZToJNZ) {
-        doPatching(factorioFilePath, patternPair, 0);
+        doPatching(buffer, patternPair, Patcher::PATCH_TYPE_JZJNZ);
     }
 
     Log::LogF("Patching instructions to JMP from JZ..\n");
     for (auto &patternPair: patternsJZToJMP) {
-        doPatching(factorioFilePath, patternPair, 1);
+        doPatching(buffer, patternPair, Patcher::PATCH_TYPE_JZJMP);
     }
 
     Log::LogF("Patching instructions to JMP from JNZ..\n");
     for (auto &patternPair: patternsToJMPFromJNZ) {
-        doPatching(factorioFilePath, patternPair, 2);
+        doPatching(buffer, patternPair, Patcher::PATCH_TYPE_JNZJMP);
     }
 
     Log::LogF("Patching instructions to CMOVZ from CMOVNZ..\n");
  
     std::string userInput = "";
-    Log::LogF("Do you want to use the modded achievement save? (y/N)\n");
+    Log::LogF("\033[1mDo you want to use the modded achievement save? (y/N)\033[0m\n");
     std::getline(std::cin, userInput);
 
     if (userInput.empty() || std::tolower(userInput[0]) == 'n') {
         Log::LogF("Using vanilla achievements.dat\n");
         for (auto &patternPair : patternsToCMOVZ) {
-            doPatching(factorioFilePath, patternPair, 3);
+            doPatching(buffer, patternPair, Patcher::PATCH_TYPE_CMOVNZCMOVZ);
         }
     } else {
         Log::LogF("Using modded achievements.dat\n");
+    }
+
+    Log::LogF("Writing patched factorio binary..\n");
+    if (!Patcher::WriteBufferToFile(factorioFilePath, buffer)) {
+        Log::LogF("Failed to write patched data to factorio.\n");
+        return 1;
     }
 
     Log::LogF("Marking Factorio as an executable..\n");

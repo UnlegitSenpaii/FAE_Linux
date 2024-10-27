@@ -6,14 +6,15 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/bin)
 
+#default to release if not specified
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
+
 include_directories(src/helpers)
 
-add_executable(FAE_Linux
-        src/helpers/filehelper.cpp
-        src/helpers/filehelper.hpp
-        src/helpers/logging.cpp
-        src/helpers/logging.hpp
-        src/helpers/patching.cpp
-        src/helpers/patching.hpp
-        src/fae_linux.cpp)
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 
+add_executable(FAE_Linux ${SOURCES})
