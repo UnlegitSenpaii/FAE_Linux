@@ -1,5 +1,4 @@
-#ifndef FAE_LINUX_PATCHING_HPP
-#define FAE_LINUX_PATCHING_HPP
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -18,5 +17,3 @@ namespace Patcher
         int replaceInstruction);
 
 } // Patcher
-
-#endif //FAE_LINUX_PATCHING_HPP
