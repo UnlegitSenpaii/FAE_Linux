@@ -23,7 +23,7 @@ If there is an update you can just compare the old and new file versions, no nee
 [Ghidra (Tool used for RE)](https://github.com/NationalSecurityAgency/ghidra)<br>
 [oorzkws FAE for Windows (for the Patterns :) )](https://github.com/oorzkws/FactorioAchievementEnabler)<br>
 
-## how to get the Windows game files from steam and keeping the current install
+## How to get the Windows game files from steam, without affecting the current install
 
 ### Before running the script
 make sure that you have steamcmd installed. <br>
