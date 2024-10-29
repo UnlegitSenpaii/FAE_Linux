@@ -31,7 +31,8 @@
  * note for me: this is the achievements.dat & achievements-modded.dat thingy
  * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat 
  * PlayerData::PlayerData
- * 45 f0 e8 d9 0c           CMOVNZ > CMOVZ
+ * 45 f0 e8 b9 51 f4 fe          CMOVNZ > CMOVZ
+ * 
  * 
  * PlayerData::PlayerData 2 changed how it does the achievement check with a null check for *(char *)(global + 0x310)  i think..?  -- prolly not needed
  * 0f 84 35 07 00 00 48 81 c4 e8 26 00 00 -- jz > jnz
@@ -69,7 +70,7 @@ std::unordered_map<std::string, std::vector<uint8_t>> patternsJZToJMP {
 };
 
 std::unordered_map<std::string, std::vector<uint8_t>> patternsToCMOVZ {
-    {"PlayerData::PlayerData", {0x45, 0xF0, 0xE8, 0xD9, 0x0C}}
+    {"PlayerData::PlayerData", {0x45, 0xF0, 0xE8, 0xB9, 0x51, 0xF4, 0xFE}}
 };
 
 void doPatching(std::vector<std::uint8_t> &buffer, const std::pair<std::string, std::vector<uint8_t>> &patternPair, int replaceInstruction) {
