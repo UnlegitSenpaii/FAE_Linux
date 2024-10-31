@@ -50,35 +50,61 @@
  * 74 10 31 c0 5b 41 5c 41 5d 41 5e
  */
 
-// TODO: Implement placeholders for the patterns
+std::vector<patternData_t> patternList = {
+    /*
+        JZ -> JNZ Patches
+    */
+    {PATCH_TYPE_JZJNZ, "SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally",
+    "74 34 0f 1f 00 48 8b 10 80 7a 3e 00"},
 
-// imagine how funny a std::vector<std::tuple<Patcher::PATCH_TYPE, std::vector<std::pair<std::string, std::vector<uint8_t>>>>> would be
+    {PATCH_TYPE_JZJNZ, "SteamContext::updateAchievementStatsFromSteam", 
+    "74 30 0f 1f 80 00 00 00 00 48 8b 10"},
 
-std::unordered_map<std::string, std::vector<uint8_t>> patternsJZToJNZ {
-    {"SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally", { 0x74, 0x34, 0x0f, 0x1f, 0x00, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00 }},
-    {"SteamContext::updateAchievementStatsFromSteam", {0x74, 0x30, 0x0f, 0x1f, 0x80, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8b, 0x10}}, 
+    /*
+        JNZ -> JMP Patches
+    */
+    {PATCH_TYPE_JNZJMP, "AchievementGui::updateModdedLabel",
+    "75 5b 55 45 31 C0 45 31"},
+
+    /*
+        JZ -> JMP Patches
+    */
+    {PATCH_TYPE_JZJMP, "SteamContext::setStat & SteamContext::unlockAchievement", 
+    "74 2d ? ? ? ? 48 8b 10 80 7a 3e 00 74 17 80 7a 40 00 74 11 80 7a", 2},
+
+    {PATCH_TYPE_JZJMP, "AchievementGui::allowed",
+    "74 17 48 83 78 20 00"},
+
+    {PATCH_TYPE_JZJMP, "AchievementGui::allowed2", 
+    "74 10 31 c0 5b 41 5c 41 5d 41 5e"},
+
+    /*
+        CMOVNZ -> CMOVZ Patches
+    */
+    {PATCH_TYPE_CMOVNZCMOVZ, "PlayerData::PlayerData", 
+    "45 f0 e8 ? ? ? ? 48 8b 05 ? ? ? ? 49 8d bd ? ? ? ? 48 89 da 48 89 bd", 1, true},
 };
 
-std::unordered_map<std::string, std::vector<uint8_t>> patternsToJMPFromJNZ {
-    {"AchievementGui::updateModdedLabel", {0x75, 0x5b, 0x55, 0x45, 0x31, 0xC0, 0x45, 0x31}},
-};
+void doPatching(std::vector<std::uint8_t> &buffer, const patternData_t& patternData) {
+    Log::LogF("Patching %s:\n", patternData.patternName.c_str());
+    std::vector<std::uint8_t> completeSearchPattern;
+    if (!Patcher::GenerateSearchPattern(buffer, patternData.pattern, completeSearchPattern)) {
+        Log::LogF(" -> FAILED!\n");
+        return;
+    }
+    const std::vector<uint8_t> replacementPattern = Patcher::GenerateReplacePattern(completeSearchPattern, patternData.patchType);
+    Log::LogF("Pattern:\t0x%x\n Replacement pattern:\t0x%x\n", patternData.patternName.c_str(), completeSearchPattern.data(), replacementPattern.data());
 
-std::unordered_map<std::string, std::vector<uint8_t>> patternsJZToJMP {
-    {"SteamContext::setStat & SteamContext::unlockAchievement", {0x74, 0x2d, 0x0f, 0x1f, 0x40, 0x00, 0x48, 0x8b, 0x10, 0x80, 0x7a, 0x3e, 0x00, 0x74, 0x17, 0x80, 0x7a, 0x40, 0x00, 0x74, 0x11, 0x80, 0x7a}},
-    {"AchievementGui::allowed", {0x74, 0x17, 0x48, 0x83, 0x78, 0x20, 0x00}},
-    {"AchievementGui::allowed2", {0x74, 0x10, 0x31, 0xc0, 0x5b, 0x41, 0x5c, 0x41, 0x5d, 0x41, 0x5e}},
-};
+    std::string completePatternAsString;
+    for (const auto &byte : completeSearchPattern) {
+        char buffer[4]; //just dont overflow, please
+        snprintf(buffer, sizeof(buffer), "%02X ", byte);
+        completePatternAsString += buffer;
+    }
+    Log::LogF("Complete Search Pattern: %s\n", completePatternAsString.c_str());
+    
 
-std::unordered_map<std::string, std::vector<uint8_t>> patternsToCMOVZ {
-    {"PlayerData::PlayerData", {0x45, 0xF0, 0xE8, 0xB9, 0x51, 0xF4, 0xFE}}
-};
-
-void doPatching(std::vector<std::uint8_t> &buffer, const std::pair<std::string, std::vector<uint8_t>> &patternPair, int replaceInstruction) {
-    const std::string patternName = patternPair.first;
-    const std::vector<uint8_t> pattern = patternPair.second;
-    const std::vector<uint8_t> replacementPattern = Patcher::GenerateReplacePattern(pattern, replaceInstruction);
-    Log::LogF("Patching %s with following data:\n pattern:\t0x%x\n replacement pattern:\t0x%x\n", patternName.c_str(), pattern.data(), replacementPattern.data());
-    if (!Patcher::ReplaceHexPattern(buffer, pattern, replacementPattern)) {
+    if (!Patcher::ReplaceHexPattern(buffer, completeSearchPattern, replacementPattern, patternData.expectedPatchCount)) {
         Log::LogF(" -> FAILED!\n");
         return;
     }
@@ -104,46 +130,32 @@ int main(int argc, char *argv[]) {
 
     Log::LogF("Reading factorio binary..\n");
     std::vector<std::uint8_t> buffer;
-    if (!Patcher::ReadFileToBuffer(factorioFilePath, buffer)) {
+    if (!FileHelper::ReadFileToBuffer(factorioFilePath, buffer)) {
         Log::LogF("Failed to read factorio to buffer.\n");
         return 1;
     }
 
-    // I have a very slight suspicion that this can be moved into a single loop
-    // see line 64 in helpers/patching.cpp for the reason why
-
-    Log::LogF("Patching instructions to JNZ..\n");
-    for (auto &patternPair: patternsJZToJNZ) {
-        doPatching(buffer, patternPair, Patcher::PATCH_TYPE_JZJNZ);
-    }
-
-    Log::LogF("Patching instructions to JMP from JZ..\n");
-    for (auto &patternPair: patternsJZToJMP) {
-        doPatching(buffer, patternPair, Patcher::PATCH_TYPE_JZJMP);
-    }
-
-    Log::LogF("Patching instructions to JMP from JNZ..\n");
-    for (auto &patternPair: patternsToJMPFromJNZ) {
-        doPatching(buffer, patternPair, Patcher::PATCH_TYPE_JNZJMP);
-    }
-
-    Log::LogF("Patching instructions to CMOVZ from CMOVNZ..\n");
- 
-    std::string userInput = "";
-    Log::LogF("\033[1mDo you want to use the modded achievement save? (y/N)\033[0m\n");
-    std::getline(std::cin, userInput);
-
-    if (userInput.empty() || std::tolower(userInput[0]) == 'n') {
-        Log::LogF("Using vanilla achievements.dat\n");
-        for (auto &patternPair : patternsToCMOVZ) {
-            doPatching(buffer, patternPair, Patcher::PATCH_TYPE_CMOVNZCMOVZ);
+    for (const auto &patternEntry : patternList) {
+        if(!patternEntry.optional){
+            doPatching(buffer, patternEntry);
+            continue;
         }
-    } else {
-        Log::LogF("Using modded achievements.dat\n");
+
+        std::string userInput = "";
+        Log::LogF("\033[1mDo you want to use the modded achievement save? (y/N)\033[0m\n");
+        std::getline(std::cin, userInput);
+
+        if (userInput.empty() || std::tolower(userInput[0]) == 'n') {
+            Log::LogF("Using vanilla achievements.dat\n");
+            doPatching(buffer, patternEntry);
+            
+        } else {
+            Log::LogF("Using modded achievements.dat\n");
+        }
     }
 
     Log::LogF("Writing patched factorio binary..\n");
-    if (!Patcher::WriteBufferToFile(factorioFilePath, buffer)) {
+    if (!FileHelper::WriteBufferToFile(factorioFilePath, buffer)) {
         Log::LogF("Failed to write patched data to factorio.\n");
         return 1;
     }

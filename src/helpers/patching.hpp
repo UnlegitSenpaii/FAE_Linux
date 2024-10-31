@@ -6,22 +6,35 @@
 #include <fstream>
 #include <cerrno>
 #include <cstring>
+#include <optional>
+#include <sstream>
+#include <stdexcept>
+#include <algorithm>
+
+enum PATCH_TYPE
+{
+    PATCH_TYPE_JZJNZ = 0,
+    PATCH_TYPE_JZJMP = 1,
+    PATCH_TYPE_JNZJMP = 2,
+    PATCH_TYPE_CMOVNZCMOVZ = 3,
+    PATCH_TYPE_MAX
+};
+
+struct patternData_t
+{
+    PATCH_TYPE patchType;
+    std::string patternName;
+    std::string pattern;
+    int expectedPatchCount = 1;
+    bool optional = false;
+};
 
 namespace Patcher
 {
-	enum PATCH_TYPE
-	{
-		PATCH_TYPE_JZJNZ = 0,
-		PATCH_TYPE_JZJMP = 1,
-		PATCH_TYPE_JNZJMP = 2,
-		PATCH_TYPE_CMOVNZCMOVZ = 3,
-		PATCH_TYPE_MAX
-	};
 
-	bool ReadFileToBuffer(const std::string& filePath, std::vector<std::uint8_t>& buffer);
-	bool WriteBufferToFile(const std::string& filePath, const std::vector<std::uint8_t>& buffer);
-	
-	bool ReplaceHexPattern(std::vector<std::uint8_t>& buffer, const std::vector<std::uint8_t>& searchPattern, const std::vector<std::uint8_t>& replacePattern);
 
+	bool GenerateSearchPattern(const std::vector<std::uint8_t> &buffer, const std::string &incompleteSearchPattern, std::vector<std::uint8_t> &searchPattern);
+	bool ReplaceHexPattern(std::vector<std::uint8_t> &buffer, const std::vector<std::uint8_t> &searchPattern, const std::vector<std::uint8_t> &replacePattern, int expectedPatchCount = 1);
 	std::vector<std::uint8_t> GenerateReplacePattern(const std::vector<std::uint8_t>& searchPattern, int replaceInstruction);
+    bool FindPattern(const std::vector<std::uint8_t>& buffer, const std::string& patternAsString, std::vector<std::size_t>& matchPositions);
 }

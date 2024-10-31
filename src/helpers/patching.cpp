@@ -1,27 +1,77 @@
 #include "patching.hpp"
 #include "logging.hpp"
 
-bool Patcher::ReadFileToBuffer(const std::string &filePath, std::vector<std::uint8_t> &buffer) {
-    std::ifstream inputFile(filePath, std::ios::binary);
-    if (!inputFile.is_open()) 
-        return false;
+std::uint8_t HexCharToValue(char c) {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    throw std::invalid_argument("Invalid hex character");
+}
 
-    buffer = std::vector<std::uint8_t>((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
-    inputFile.close();
+std::uint8_t HexToByte(const std::string &hex) {
+    if (hex.size() != 2) throw std::invalid_argument("Invalid hex string length");
+    return (HexCharToValue(hex[0]) << 4) | HexCharToValue(hex[1]);
+}
+
+std::vector<std::optional<std::uint8_t>> ConvertPattern(const std::string &patternAsString) {
+    std::vector<std::optional<std::uint8_t>> pattern;
+    std::istringstream stream(patternAsString);
+    std::string byteStr;
+
+    while (stream >> byteStr) {
+        if (byteStr == "?") {
+            pattern.push_back(std::nullopt);
+            continue;
+        }
+
+        pattern.push_back(HexToByte(byteStr));    
+    }
+    return pattern;
+}
+
+//optional magic: will not contain a value in the location if the byte is a wildcard
+bool MatchesPattern(const std::vector<std::uint8_t> &buffer, const std::vector<std::optional<std::uint8_t>> &pattern, std::size_t pos) {
+    for (std::size_t i = 0; i < pattern.size(); ++i) {
+        if (pattern[i].has_value() && buffer[pos + i] != pattern[i].value()) {
+            return false;
+        }
+    }
     return true;
 }
 
-bool Patcher::WriteBufferToFile(const std::string &filePath, const std::vector<std::uint8_t> &buffer) {
-    std::ofstream outputFile(filePath, std::ios::binary);
-    if (!outputFile.is_open()) 
+bool Patcher::GenerateSearchPattern(const std::vector<std::uint8_t> &buffer, const std::string &incompleteSearchPattern, std::vector<std::uint8_t> &searchPattern) {
+    std::vector<std::optional<std::uint8_t>> pattern{};
+
+    try {
+        pattern = ConvertPattern(incompleteSearchPattern);
+    } catch (const std::invalid_argument &e) {
+        Log::LogF("Error in Pattern: %s\n", e.what());
         return false;
-    
-    outputFile.write(reinterpret_cast<const char *>(buffer.data()), buffer.size());
-    outputFile.close();
-    return true;
+    }
+
+    //check if we have wildcards, if not, we can just return the pattern
+    if (std::none_of(pattern.begin(), pattern.end(), [](const std::optional<std::uint8_t> &byte) { return !byte.has_value(); })) {
+        searchPattern = std::vector<std::uint8_t>(pattern.size());
+        for (std::size_t i = 0; i < pattern.size(); ++i) {
+            searchPattern[i] = pattern[i].value();
+        }
+        return true;
+    }
+
+
+    for (std::size_t bufferPos = 0; bufferPos <= buffer.size() - pattern.size(); ++bufferPos) {
+        if (!MatchesPattern(buffer, pattern, bufferPos)) {
+            continue;
+        }
+
+        searchPattern.insert(searchPattern.end(), buffer.begin() + bufferPos, buffer.begin() + bufferPos + pattern.size());
+        return true;
+    }
+
+    return false;
 }
 
-bool Patcher::ReplaceHexPattern(std::vector<std::uint8_t> &buffer, const std::vector<std::uint8_t> &searchPattern, const std::vector<std::uint8_t> &replacePattern) {
+bool Patcher::ReplaceHexPattern(std::vector<std::uint8_t> &buffer, const std::vector<std::uint8_t> &searchPattern, const std::vector<std::uint8_t> &replacePattern, int expectedPatchCount) {
     if (searchPattern.size() != replacePattern.size()) {
         Log::LogF("Error: Search and replace patterns must be the same size.\n");
         return false;
@@ -50,8 +100,8 @@ bool Patcher::ReplaceHexPattern(std::vector<std::uint8_t> &buffer, const std::ve
         ++matchesFound;
     }
     
-    Log::LogF(" %d matches for the pattern.\n", matchesFound);
-    return matchesFound > 0;
+    Log::LogF(" %d matches for the pattern, expected patches: %d.\n", matchesFound, expectedPatchCount);
+    return matchesFound == expectedPatchCount;
 }
 
 
@@ -61,7 +111,6 @@ std::vector<std::uint8_t> Patcher::GenerateReplacePattern(const std::vector<std:
 
     std::vector<std::uint8_t> replacePattern;
 
-    //do I get paid for writing this in a clean way? no. do I get paid at all? no. :( 
     switch (replaceInstruction) {
         case PATCH_TYPE_JZJNZ://JZ -> JNZ (0x75 or 0x85) instruction
             if (searchPattern[0] != 0x74 && searchPattern[0] != 0x84) //Check for JZ (0x74 or 0x84)
