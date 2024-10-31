@@ -20,7 +20,7 @@ The compiled binary can be found in the /out folder.
 ## Contribution Guidelines
 
 - **Major cosmetic changes** will not be accepted and will be **rejected**.
-- Small, meaningful changes such as **pattern updates**, fixing typos or minor functionality improvements are **welcome**.
+- Small, meaningful changes such as **pattern updates** or minor functionality improvements are **welcome**.
 - Pull requests that introduce **large, sweeping changes** that are difficult to review will be rejected **without comment**, due to **security and maintainability concerns**.
 
 Please ensure your contributions are focused, clear, and easy to review. Thank you for your understanding!
