@@ -28,9 +28,7 @@ Please ensure your contributions are focused, clear, and easy to review. Thank y
 ## Notes
 You can find the results of tests in the latest release notes.
 
-Get the patterns from ghidra.<br>
-I used the windows patterns as a reference, this makes it very easy to find the patterns.<br>
-If there is an update you can just compare the old and new file versions, no need to use the windows version. <br>
+You can find additional information in the [wiki](https://github.com/UnlegitSenpaii/FAE_Linux/wiki).
 
 ## Credits
 [VSCode](https://code.visualstudio.com/)<br>
