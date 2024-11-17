@@ -87,23 +87,23 @@ std::vector<patternData_t> patternList = {
 
 void doPatching(std::vector<std::uint8_t> &buffer, const patternData_t& patternData) {
     Log::LogF("Patching %s:\n", patternData.patternName.c_str());
+    
     std::vector<std::uint8_t> completeSearchPattern;
     if (!Patcher::GenerateSearchPattern(buffer, patternData.pattern, completeSearchPattern)) {
         Log::LogF(" -> FAILED!\n");
         return;
     }
+    
     const std::vector<uint8_t> replacementPattern = Patcher::GenerateReplacePattern(completeSearchPattern, patternData.patchType);
-    Log::LogF("Pattern:\t0x%x\n Replacement pattern:\t0x%x\n", patternData.patternName.c_str(), completeSearchPattern.data(), replacementPattern.data());
-
+    
     std::string completePatternAsString;
     for (const auto &byte : completeSearchPattern) {
         char buffer[4]; //just dont overflow, please
         snprintf(buffer, sizeof(buffer), "%02X ", byte);
         completePatternAsString += buffer;
     }
-    Log::LogF("Complete Search Pattern: %s\n", completePatternAsString.c_str());
+    Log::LogF("Looking for memory pattern: %s\n", completePatternAsString.c_str());
     
-
     if (!Patcher::ReplaceHexPattern(buffer, completeSearchPattern, replacementPattern, patternData.expectedPatchCount)) {
         Log::LogF(" -> FAILED!\n");
         return;
