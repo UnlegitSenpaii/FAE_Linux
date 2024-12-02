@@ -55,7 +55,7 @@ std::vector<patternData_t> patternList = {
         JZ -> JNZ Patches
     */
     {PATCH_TYPE_JZJNZ, "SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally",
-    "74 34 0f 1f 00 48 8b 10 80 7a 3e 00"},
+    "74 37 66 0f 1f 44 00 00 48 8b 10 80"},
 
     {PATCH_TYPE_JZJNZ, "SteamContext::updateAchievementStatsFromSteam", 
     "74 30 0f 1f 80 00 00 00 00 48 8b 10"},
