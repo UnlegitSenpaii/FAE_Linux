@@ -4,7 +4,6 @@
 
 ## Features
 - **Unlock Steam Achievements:** Enables achievement tracking with mods.
-- **Linux Support:** Designed for Linux users. 
 - **Easy to Use:** Simple command-line interface.
 
 ## Usage
