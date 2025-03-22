@@ -9,7 +9,8 @@
 /*
  * Patterns:
  * SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
- * 74 34 0f 1f 00 48 8b 10 80 7a 3e 00
+ * 74 37 66 0f 1f 44 00 00 48 8b 10 80
+ * if this one breaks, look at the first match for 74 ? 66 0F 1F 44 ? ? 48 8B ? 80 7A ? 00
  * 
  * SteamContext::updateAchievementStatsFromSteam jz > jnz
  * 74 30 0f 1f 80 00 00 00 00 48 8b 10
