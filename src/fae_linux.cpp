@@ -7,6 +7,9 @@
 #include "helpers/patching.hpp"
 
 /*
+ * Want to update the patterns yourself?
+ * check out the wiki: https://github.com/UnlegitSenpaii/FAE_Linux/wiki/Finding-the-currently-used-patterns-in-ghidra
+
  * Patterns:
  * SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
  * 74 34 0f 1f 00 48 8b 10 80 7a 3e 00
