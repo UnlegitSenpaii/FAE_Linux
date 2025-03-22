@@ -47,7 +47,7 @@ std::vector<patternData_t> patternList = {
         JZ -> JNZ Patches
     */
     {PATCH_TYPE_JZJNZ, "PlayerData::PlayerData", 
-    "74 2e 48 8d 15 2b 91 e6 fd eb 0d 0f 1f 40 00 48 83 c0 08", 1, true},
+    "74 2e 48 8d 15 ? ? ? ? eb 0d 0f 1f 40 00 48 83 c0 08", 1, true},
 
     /*
         JZ -> JMP Patches
