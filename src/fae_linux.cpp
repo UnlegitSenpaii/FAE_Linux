@@ -12,20 +12,15 @@
  * 
  * why is ghidra 11.3.1 so ass?
  * Patterns:
- * (missing) SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
+ * (missing -> turned to part 1 of OnUserStatsReceived) SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
  * 74 37 66 0f 1f 44 00 00 48 8b 10 80
  * if this one breaks, look at the first match for 74 ? 66 0F 1F 44 ? ? 48 8B ? 80 7A ? 00
  * 
- * (missing) SteamContext::updateAchievementStatsFromSteam jz > jnz
+ * (missing  -> turned to part 2 of OnUserStatsReceived) SteamContext::updateAchievementStatsFromSteam jz > jnz
  * 74 30 0f 1f 80 00 00 00 00 48 8b 10
  *
  * (in undefined function region???) AchievementGui::updateModdedLabel //turn while true to while !true
  * 74 de 48 8d 0d 52 cc -- JZ > JMP
- * 
- * //not needed anymore except if 0x02054feb needs to be changed
- * (missing) AchievementGui::AchievementGui jz > jnz
- * 84 8a 03 00 00 0f 1f 44 00
- *
  *
  * note for me: this is the achievements.dat & achievements-modded.dat thingy
  * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat 
@@ -38,10 +33,10 @@
  * SteamContext::unlockAchievement jz > jmp 
  * 74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c
  * 
+ * SteamContext::OnUserStatsReceived JZ > JMP
+ * 74 ?  48 8b ?  80 7A ?  ?  ?  ?  80 7A ?  ?  ?  ?  80 7A ?  ?  ?  ?  e9 22 01 00 00
+ * 74 68 48 ba 74 65 73 74 5f 6d 6f 64 eb 0f 66 0f 1f 44 00 00 48 83 c0 08 
  * 
- * 
- * todo: check out 74 ? 48 8b ? 80 7A ? ? ? ? 80 7A ? ? ? ? 80 7A ? ? ? ? e9 22 01 00 00 in OnUserStatsReceived
- *
  * AchievementGui::allowed (map) jz > jmp
  * 74 07 48 83 78 20 00 75 cc   JZ > JNZ    //maybe not needed
  * 75 cc 49 8b 80 58 01     JNZ > JMP 
@@ -54,19 +49,20 @@ std::vector<patternData_t> patternList = {
     {PATCH_TYPE_JZJNZ, "PlayerData::PlayerData", 
     "74 2e 48 8d 15 2b 91 e6 fd eb 0d 0f 1f 40 00 48 83 c0 08", 1, true},
 
-
-
     /*
         JZ -> JMP Patches
     */
     {PATCH_TYPE_JZJMP, "SteamContext::setStat", 
-    "74 1a 4c 8b 00 41 80 78 3e 01 75 ed 41 80 78 40 01 75 e6 41 80 78 41", 1},
+    "74 1a 4c 8b 00 41 80 78 3e 01 75 ed 41 80 78 40 01 75 e6 41 80 78 41"},
 
     {PATCH_TYPE_JZJMP, "SteamContext::unlockAchievement", 
-    "74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c", 1},
+    "74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c"},
 
     {PATCH_TYPE_JZJMP, "SteamContext::OnUserStatsReceived", 
-    "74 ? 48 8b ? 80 7A ? ? ? ? 80 7A ? ? ? ? 80 7A ? ? ? ? e9 22 01 00 00", 1},
+    "74 ? 48 8b ? 80 7A ? ? ? ? 80 7A ? ? ? ? 80 7A ? ? ? ? e9 22 01 00 00"},
+
+    {PATCH_TYPE_JZJMP, "SteamContext::OnUserStatsReceived2", 
+    "74 68 48 ba 74 65 73 74 5f 6d 6f 64 eb 0f 66 0f 1f 44 00 00 48 83 c0 08"},
 
     {PATCH_TYPE_JZJMP, "AchievementGui::allowed",
     "74 07 48 83 78 20 00 75 cc"},
