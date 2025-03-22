@@ -9,7 +9,8 @@
 /*
  * Want to update the patterns yourself?
  * check out the wiki: https://github.com/UnlegitSenpaii/FAE_Linux/wiki/Finding-the-currently-used-patterns-in-ghidra
-
+ * 
+ * why is ghidra 11.3.1 so ass?
  * Patterns:
  * (missing) SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
  * 74 37 66 0f 1f 44 00 00 48 8b 10 80
@@ -18,9 +19,8 @@
  * (missing) SteamContext::updateAchievementStatsFromSteam jz > jnz
  * 74 30 0f 1f 80 00 00 00 00 48 8b 10
  *
- * (missing) AchievementGui::updateModdedLabel //turn while true to while !true
- * 75 5b 55 45 31 C0 45 31 -- jnz > jz
- *  -> if this doesnt work use: 74 7f 66 0f 1f 44 00 00 48 8b 10 -- jz > jnz
+ * (in undefined function region???) AchievementGui::updateModdedLabel //turn while true to while !true
+ * 74 de 48 8d 0d 52 cc -- JZ > JMP
  * 
  * //not needed anymore except if 0x02054feb needs to be changed
  * (missing) AchievementGui::AchievementGui jz > jnz
@@ -70,6 +70,9 @@ std::vector<patternData_t> patternList = {
 
     {PATCH_TYPE_JZJMP, "AchievementGui::allowed",
     "74 07 48 83 78 20 00 75 cc"},
+
+    {PATCH_TYPE_JZJMP, "AchievementGui::updateModdedLabel",
+    "74 de 48 8d 0d 52 cc"},
 
     /*
         JNZ -> JMP Patches
