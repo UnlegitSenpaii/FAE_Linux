@@ -7,83 +7,75 @@
 #include "helpers/patching.hpp"
 
 /*
+ * Want to update the patterns yourself?
+ * check out the wiki: https://github.com/UnlegitSenpaii/FAE_Linux/wiki/Finding-the-currently-used-patterns-in-ghidra
+ * 
+ * why is ghidra 11.3.1 so ass?
  * Patterns:
- * SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
+ * (missing -> turned to part 1 of OnUserStatsReceived) SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
  * 74 37 66 0f 1f 44 00 00 48 8b 10 80
  * if this one breaks, look at the first match for 74 ? 66 0F 1F 44 ? ? 48 8B ? 80 7A ? 00
  * 
- * SteamContext::updateAchievementStatsFromSteam jz > jnz
+ * (missing  -> turned to part 2 of OnUserStatsReceived) SteamContext::updateAchievementStatsFromSteam jz > jnz
  * 74 30 0f 1f 80 00 00 00 00 48 8b 10
  *
- * AchievementGui::updateModdedLabel //turn while true to while !true
- * 75 5b 55 45 31 C0 45 31 -- jnz > jz
- *  -> if this doesnt work use: 74 7f 66 0f 1f 44 00 00 48 8b 10 -- jz > jnz
- * 
- * //not needed anymore except if 0x02054feb needs to be changed
- * AchievementGui::AchievementGui jz > jnz
- * 84 8a 03 00 00 0f 1f 44 00
- *
- * ModManager::isVanilla // modifying this directly might break stuff
- * -> this function is used in the linux version in PlayerData to determine if the game is modded or not.
- * In Windows, it's not (or the compiler optimizes it out)
- * Update: this function exits three times now? 
- *  todo: check isVanillaMod & 2x isVanilla
+ * (in undefined function region???) AchievementGui::updateModdedLabel //turn while true to while !true
+ * 74 de 48 8d 0d 52 cc -- JZ > JMP
  *
  * note for me: this is the achievements.dat & achievements-modded.dat thingy
  * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat 
- * PlayerData::PlayerData
- * 45 f0 e8 b9 51 f4 fe          CMOVNZ > CMOVZ
- * 
- * 
- * PlayerData::PlayerData 2 changed how it does the achievement check with a null check for *(char *)(global + 0x310)  i think..?  -- prolly not needed
- * 0f 84 35 07 00 00 48 81 c4 e8 26 00 00 -- jz > jnz
+ * PlayerData::PlayerData JZ > jnz
+ * 74 2e 48 8d 15 2b 91 e6 fd eb 0d 0f 1f 40 00 48 83 c0 08 
  *
  * SteamContext::setStat jz > jmp
- * 74 2d ?? ?? ?? ?? 48 8b 10 80 7a 3e 00 74 17 80 7a 40 00 74 11 80 7a
+ * 74 1a 4c 8b 00 41 80 78 3e 01 75 ed 41 80 78 40 01 75 e6 41 80 78 41
  *
- * not needed anymore
  * SteamContext::unlockAchievement jz > jmp 
- * 74 2d 0f 1f 40 00 48 8b 10 80 7a 3e 00
+ * 74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c
  * 
- *
+ * SteamContext::OnUserStatsReceived JZ > JMP
+ * 74 ?  48 8b ?  80 7A ?  ?  ?  ?  80 7A ?  ?  ?  ?  80 7A ?  ?  ?  ?  e9 22 01 00 00
+ * 74 68 48 ba 74 65 73 74 5f 6d 6f 64 eb 0f 66 0f 1f 44 00 00 48 83 c0 08 
+ * 
  * AchievementGui::allowed (map) jz > jmp
- * 74 17 48 83 78 20 00
- * 74 10 31 c0 5b 41 5c 41 5d 41 5e
+ * 74 07 48 83 78 20 00 75 cc   JZ > JNZ    //maybe not needed
+ * 75 cc 49 8b 80 58 01     JNZ > JMP 
  */
 
 std::vector<patternData_t> patternList = {
     /*
         JZ -> JNZ Patches
     */
-    {PATCH_TYPE_JZJNZ, "SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally",
-    "74 37 66 0f 1f 44 00 00 48 8b 10 80"},
-
-    {PATCH_TYPE_JZJNZ, "SteamContext::updateAchievementStatsFromSteam", 
-    "74 30 0f 1f 80 00 00 00 00 48 8b 10"},
-
-    /*
-        JNZ -> JMP Patches
-    */
-    {PATCH_TYPE_JNZJMP, "AchievementGui::updateModdedLabel",
-    "75 5b 55 45 31 C0 45 31"},
+    {PATCH_TYPE_JZJNZ, "PlayerData::PlayerData", 
+    "74 2e 48 8d 15 ? ? ? ? eb 0d 0f 1f 40 00 48 83 c0 08", 1, true},
 
     /*
         JZ -> JMP Patches
     */
-    {PATCH_TYPE_JZJMP, "SteamContext::setStat & SteamContext::unlockAchievement", 
-    "74 2d ? ? ? ? 48 8b 10 80 7a 3e 00 74 17 80 7a 40 00 74 11 80 7a", 2},
+    {PATCH_TYPE_JZJMP, "SteamContext::setStat", 
+    "74 1a 4c 8b 00 41 80 78 3e 01 75 ed 41 80 78 40 01 75 e6 41 80 78 41"},
+
+    {PATCH_TYPE_JZJMP, "SteamContext::unlockAchievement", 
+    "74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c"},
+
+    {PATCH_TYPE_JZJMP, "SteamContext::OnUserStatsReceived", 
+    "74 ? 48 8b ? 80 7A ? ? ? ? 80 7A ? ? ? ? 80 7A ? ? ? ? e9 22 01 00 00"},
+
+    {PATCH_TYPE_JZJMP, "SteamContext::OnUserStatsReceived2", 
+    "74 68 48 ba 74 65 73 74 5f 6d 6f 64 eb 0f 66 0f 1f 44 00 00 48 83 c0 08"},
 
     {PATCH_TYPE_JZJMP, "AchievementGui::allowed",
-    "74 17 48 83 78 20 00"},
+    "74 07 48 83 78 20 00 75 cc"},
 
-    {PATCH_TYPE_JZJMP, "AchievementGui::allowed2", 
-    "74 10 31 c0 5b 41 5c 41 5d 41 5e"},
+    {PATCH_TYPE_JZJMP, "AchievementGui::updateModdedLabel",
+    "74 de 48 8d 0d 52 cc"},
 
     /*
-        CMOVNZ -> CMOVZ Patches
+        JNZ -> JMP Patches
     */
-    {PATCH_TYPE_CMOVNZCMOVZ, "PlayerData::PlayerData", 
-    "45 f0 e8 ? ? ? ? 48 8b 05 ? ? ? ? 49 8d bd ? ? ? ? 48 89 da 48 89 bd", 1, true},
+    {PATCH_TYPE_JNZJMP, "AchievementGui::allowed2", 
+    "75 cc 49 8b 80 58 01"},
+
 };
 
 void doPatching(std::vector<std::uint8_t> &buffer, const patternData_t& patternData) {

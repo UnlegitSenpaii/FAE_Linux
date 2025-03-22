@@ -131,6 +131,13 @@ std::vector<std::uint8_t> Patcher::GenerateReplacePattern(const std::vector<std:
             replacePattern.push_back(0xEB);
             break;
 
+        case PATCH_TYPE_JNZJZ://JNZ -> JZ (0x74 or 0x84) instruction
+            if (searchPattern[0] != 0x0F && searchPattern[1] != 0x85 && // Check for JNZ (0F 85)
+                searchPattern[0] != 0x75)                               // Check for JNZ SHORT (75)
+                return {};
+            replacePattern.push_back(searchPattern[0] == 0x75 ? 0x74 : 0x84);
+            break;
+
         case PATCH_TYPE_CMOVNZCMOVZ://CMOVNZ (0F 45) -> CMOVZ (0F 44) -- Prefix (0f) discarded!!
             if (searchPattern[0] != 0x45) //Check for CMOVNZ (0F 45) -- Prefix (0f) discarded!!
                 return {};
