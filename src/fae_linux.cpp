@@ -54,11 +54,7 @@ std::vector<patternData_t> patternList = {
     {PATCH_TYPE_JZJNZ, "PlayerData::PlayerData", 
     "74 2e 48 8d 15 2b 91 e6 fd eb 0d 0f 1f 40 00 48 83 c0 08", 1, true},
 
-    /*
-        JNZ -> JMP Patches
-    */
-    {PATCH_TYPE_JNZJMP, "AchievementGui::allowed2", 
-    "75 cc 49 8b 80 58 01"},
+
 
     /*
         JZ -> JMP Patches
@@ -74,6 +70,12 @@ std::vector<patternData_t> patternList = {
 
     {PATCH_TYPE_JZJMP, "AchievementGui::allowed",
     "74 07 48 83 78 20 00 75 cc"},
+
+    /*
+        JNZ -> JMP Patches
+    */
+    {PATCH_TYPE_JNZJMP, "AchievementGui::allowed2", 
+    "75 cc 49 8b 80 58 01"},
 
 };
 
