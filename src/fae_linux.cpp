@@ -20,7 +20,7 @@
  * 74 30 0f 1f 80 00 00 00 00 48 8b 10
  *
  * AchievementGui::refresh ---- XREF gui-achievements.modded-game
- * 75 ea 80 7a 40 01 75 e4 80 7a 41 01 74 de -- JNZ > JZ
+ * 84 df 00 00 00 48 8b 10 80 7a 3e 01 75 ea -- JNZ > JZ
  *
  * note for me: this is the achievements.dat & achievements-modded.dat thingy
  * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat 
