@@ -19,8 +19,8 @@
  * (missing  -> turned to part 2 of OnUserStatsReceived) SteamContext::updateAchievementStatsFromSteam jz > jnz
  * 74 30 0f 1f 80 00 00 00 00 48 8b 10
  *
- * (in undefined function region???) AchievementGui::updateModdedLabel //turn while true to while !true
- * 74 de 48 8d 0d 52 cc -- JZ > JMP
+ * AchievementGui::refresh ---- XREF gui-achievements.modded-game
+ * 84 df 00 00 00 48 8b 10 80 7a 3e 01 75 ea -- JNZ > JZ
  *
  * note for me: this is the achievements.dat & achievements-modded.dat thingy
  * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat 
@@ -39,7 +39,7 @@
  * 
  * AchievementGui::allowed (map) jz > jmp
  * 74 07 48 83 78 20 00 75 cc   JZ > JNZ    //maybe not needed
- * 75 cc 49 8b 80 58 01     JNZ > JMP 
+ * 75 cc 49 8b 80 ? 01     JNZ > JMP 
  */
 
 std::vector<patternData_t> patternList = {
@@ -48,6 +48,9 @@ std::vector<patternData_t> patternList = {
     */
     {PATCH_TYPE_JZJNZ, "PlayerData::PlayerData", 
     "74 2e 48 8d 15 ? ? ? ? eb 0d 0f 1f 40 00 48 83 c0 08", 1, true},
+
+    {PATCH_TYPE_JZJNZ, "AchievementGui::refresh",
+    "84 df 00 00 00 48 8b 10 80 7a 3e 01 75 ea"},
 
     /*
         JZ -> JMP Patches
@@ -67,14 +70,11 @@ std::vector<patternData_t> patternList = {
     {PATCH_TYPE_JZJMP, "AchievementGui::allowed",
     "74 07 48 83 78 20 00 75 cc"},
 
-    {PATCH_TYPE_JZJMP, "AchievementGui::updateModdedLabel",
-    "74 de 48 8d 0d 52 cc"},
-
     /*
         JNZ -> JMP Patches
     */
     {PATCH_TYPE_JNZJMP, "AchievementGui::allowed2", 
-    "75 cc 49 8b 80 58 01"},
+    "75 cc 49 8b 80 ? 01"},
 
 };
 
