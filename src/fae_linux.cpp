@@ -72,7 +72,7 @@ std::vector<patternData_t> patternList = {
     */
 
     {PATCH_TYPE_JNZJZ, "AchievementGui::refresh",
-    "75 ea 80 7a 40 01 75 e4 80 7a 41 01 74 de"},
+    "80 7a 41 01 74 de 48 8d 0d b6 2c 34 ff"},
 
     /*
         JNZ -> JMP Patches
