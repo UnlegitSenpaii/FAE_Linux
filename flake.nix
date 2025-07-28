@@ -8,15 +8,9 @@
 
   outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachDefaultSystem (system:
     let
-      pkgs = import nixpkgs {
-        inherit system;
-      };
+      pkgs = nixpkgs.legacyPackages.${system};
 
       # Required build tools
-      deps = with pkgs; [
-        cmake
-        gcc
-      ];
     in
     {
       packages.default = pkgs.stdenv.mkDerivation {
@@ -27,7 +21,6 @@
 
         nativeBuildInputs = with pkgs; [ cmake gcc ];
 
-        buildInputs = deps;
 
         buildPhase = ''
           cmake .
@@ -41,7 +34,7 @@
       };
 
       devShells.default = pkgs.mkShell {
-        buildInputs = deps;
+        inputsFrom = [ self.packages.${pkgs.system}.default ];
         shellHook = ''
           echo "You're now in the FAE_Linux dev shell."
           echo "To build manually:"
