@@ -18,6 +18,12 @@
    ```
 *Note: If running the executable does not work, you will have to build the project from source.* 
 
+### NixOS:
+If you're on NixOS or have Nix installed with Flakes enabled, you can instead use
+```sh
+nix run github:UnlegitSenpaii/FAE_Linux /path/to/Factorio/bin/x64/factorio
+```
+
 ## Building from Source
 Follow these steps to build the binary yourself:
 1. Clone the repository:
