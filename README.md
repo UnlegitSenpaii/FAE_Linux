@@ -7,6 +7,7 @@
 - **Easy to Use:** Simple command-line interface.
 
 ## Usage
+### Universal:
 1. **Download:** Get the executable file from the [releases tab](https://github.com/UnlegitSenpaii/FAE_Linux/releases).
 2. **Mark the file as executable:** Apply the executable flag to the downloaded file.
    ```sh
@@ -18,7 +19,7 @@
    ```
 *Note: If running the executable does not work, you will have to build the project from source.* 
 
-### NixOS:
+### NixOS (not officially supported):
 If you're on NixOS or have Nix installed with Flakes enabled, you can instead use
 ```sh
 nix run github:UnlegitSenpaii/FAE_Linux /path/to/Factorio/bin/x64/factorio
