@@ -49,6 +49,10 @@ Ensure your contributions are focused and easy to review.
 - [**Wiki**](https://github.com/UnlegitSenpaii/FAE_Linux/wiki): Find detailed guides and documentation.
 - **Release Notes**: Check the latest release note information about the supported versions and other test results.
 
+[![CodeQL](https://github.com/UnlegitSenpaii/FAE_Linux/actions/workflows/codeql.yml/badge.svg)](https://github.com/UnlegitSenpaii/FAE_Linux/actions/workflows/codeql.yml)
+[![C/C++ CI](https://github.com/UnlegitSenpaii/FAE_Linux/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/UnlegitSenpaii/FAE_Linux/actions/workflows/c-cpp.yml)
+
+
 ## Credits
 [oorzkws FAE for Windows (for the Patterns :) )](https://github.com/oorzkws/FactorioAchievementEnabler)<br>
 [contributors](https://github.com/UnlegitSenpaii/FAE_Linux/graphs/contributors)<br>
