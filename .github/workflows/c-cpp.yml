@@ -15,3 +15,5 @@ jobs:
     - uses: actions/checkout@v3
     - name: make
       run: cmake ${{ github.workspace }}/CMakeLists.txt
+    - name: build
+      run: make
