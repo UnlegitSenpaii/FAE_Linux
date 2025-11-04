@@ -15,7 +15,7 @@
    ```
 3. **Run:** Execute it with the Factorio path as a parameter.
    ```sh
-   ./FAE_Linux /path/to/Factorio/bin/x64/factorio
+   Downloads/FAE_Linux /path/to/Factorio/bin/x64/factorio
    ```
 *Note: If running the executable does not work, you will have to build the project from source.* 
 
