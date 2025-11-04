@@ -11,11 +11,11 @@
 1. **Download:** Get the executable file from the [releases tab](https://github.com/UnlegitSenpaii/FAE_Linux/releases).
 2. **Mark the file as executable:** Apply the executable flag to the downloaded file.
    ```sh
-   chmod +x Downloads/FAE_Linux
+   chmod +x ./Downloads/FAE_Linux
    ```
 3. **Run:** Execute it with the Factorio path as a parameter.
    ```sh
-   Downloads/FAE_Linux /path/to/Factorio/bin/x64/factorio
+   ./Downloads/FAE_Linux /path/to/Factorio/bin/x64/factorio
    ```
 *Note: If running the executable does not work, you will have to build the project from source.* 
 
