@@ -21,7 +21,7 @@
 
 ### Steam Deck:
 1. **Download:** Get the executable file from the [releases tab](https://github.com/UnlegitSenpaii/FAE_Linux/releases).
-2. **Open the Terminal:** Search and Open the "Konsole" Application, this is your Terminal.
+2. **Open the Terminal:** Search and Open the "Konsole" Application.
 3. **Mark the file as executable:** Apply the executable flag to the downloaded file.
    ```sh
    chmod +x ./Downloads/FAE_Linux
