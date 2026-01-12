@@ -21,11 +21,12 @@
 
 ### Steam Deck:
 1. **Download:** Get the executable file from the [releases tab](https://github.com/UnlegitSenpaii/FAE_Linux/releases).
-2. **Mark the file as executable:** Apply the executable flag to the downloaded file.
+2. **Open the Terminal:** Search and Open the "Konsole" Application, this is your Terminal.
+3. **Mark the file as executable:** Apply the executable flag to the downloaded file.
    ```sh
    chmod +x ./Downloads/FAE_Linux
    ```
-3. **Run:** Execute it with the Factorio path as a parameter.
+4. **Run:** Execute it with the Factorio path as a parameter.
    ```sh
    ./Downloads/FAE_Linux  /home/deck/.local/share/Steam/steamapps/common/Factorio/bin/x64/factorio
    ```
