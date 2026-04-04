@@ -210,8 +210,8 @@ if [ "$needs_patch" = true ]; then
                     UPDATE_CHOICE="u"
                 fi
                 case "${UPDATE_CHOICE,,}" in
-                    u|update) needs_rebuild=true ;;
-                    *)        print_info "Using existing FAE_Linux binary." ;;
+                    e|existing) print_info "Using existing FAE_Linux binary." ;;
+                    *)          needs_rebuild=true ;;
                 esac
                 ;;
         esac
