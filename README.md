@@ -14,7 +14,7 @@
 
 ## How does it work?
 
-Factorio disables Steam achievements whenever mods are loaded. FAE_Linux patches a single check inside the Factorio binary so that achievements keep working. The original binary is left untouched — a separate patched copy is created alongside it.
+Factorio disables Steam achievements whenever mods are loaded. FAE_Linux patches the check inside the Factorio binary so that achievements keep working. The original binary is left untouched — a separate patched copy is created alongside it.
 
 ---
 
