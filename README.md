@@ -4,8 +4,8 @@
 
 > **In short:** it patches the Factorio binary to remove the mod-check that disables achievements. Your save and game files are never touched.
 
-<!-- GIF PLACEHOLDER — replace the line below with your demo GIF -->
-<!-- ![Demo](docs/demo.gif) -->
+<!-- todo: add gif or screenshot here, of patcher running?  -->
+
 
 [![CodeQL](https://github.com/UnlegitSenpaii/FAE_Linux/actions/workflows/codeql.yml/badge.svg)](https://github.com/UnlegitSenpaii/FAE_Linux/actions/workflows/codeql.yml)
 [![C/C++ CI](https://github.com/UnlegitSenpaii/FAE_Linux/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/UnlegitSenpaii/FAE_Linux/actions/workflows/c-cpp.yml)
@@ -132,11 +132,9 @@ Only needed if the pre-built binary doesn't work on your system.
 
 ---
 
-## Contribution Guidelines
+## Contributing
 
-- **Pattern updates** and small, focused fixes are **welcome**.
-- **Major cosmetic changes** will be **rejected**.
-- Large PRs that are hard to review will be closed **without comment** for security and maintainability reasons.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on what is welcome, what will be rejected, and how to open a pull request.
 
 ---
 
