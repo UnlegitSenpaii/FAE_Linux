@@ -141,6 +141,7 @@ FACTORIO_BIN="$FACTORIO_BIN_DIR/$FACTORIO_BIN_NAME"
 FACTORIO_PATCHED_BIN="$FACTORIO_BIN_DIR/$FACTORIO_PATCHED_NAME"
 FAE_LINUX_BIN="$SCRIPT_DIR/$FAE_LINUX_BIN_NAME"
 FAE_LINUX_REPO_TMP="$SCRIPT_DIR/$FAE_LINUX_BUILD_DIR_NAME"
+FAE_LOG_FILE="$SCRIPT_DIR/fae_launch.log"
 
 # ---------------------------------------------------------------------------
 # Sanity-check that the original factorio binary exists
@@ -209,9 +210,10 @@ if [ "$needs_patch" = true ]; then
                 print_warning "  $FAE_LINUX_REPO_URL"
                 echo
                 if [ -t 0 ]; then
-                    read -rp "  [e] Use existing patcher   [u] Update from GitHub   (e/u, default: u): " UPDATE_CHOICE
+                    read -rp "  [e] Use existing patcher   [u] Update from GitHub   (e/u, default: e): " UPDATE_CHOICE
                 else
-                    UPDATE_CHOICE="u"
+                    UPDATE_CHOICE="e"
+                    printf '[FAE] %s Headless mode: FAE_UPDATE_MODE=prompt defaults to keep. Set FAE_UPDATE_MODE=auto-update to enable automatic updates in headless mode.\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "$FAE_LOG_FILE"
                 fi
                 case "${UPDATE_CHOICE,,}" in
                     e|existing) print_info "Using existing FAE_Linux binary." ;;
@@ -249,9 +251,12 @@ if [ "$needs_patch" = true ]; then
                         *) needs_rebuild=true ;;
                     esac
                 else
-                    # Headless — build automatically
-                    print_info "No terminal detected — building FAE_Linux automatically."
-                    needs_rebuild=true
+                    # Headless + prompt mode + no binary — cannot ask, refuse to proceed
+                    printf '[FAE] %s Headless mode: FAE_UPDATE_MODE=prompt and no FAE_Linux binary found. Automatic build is disabled. Set FAE_UPDATE_MODE=auto-update to allow silent builds, or place a pre-compiled binary at: %s\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" "$FAE_LINUX_BIN" >> "$FAE_LOG_FILE"
+                    print_error "Headless mode: no FAE_Linux binary found and auto-update is not enabled."
+                    print_error "Set FAE_UPDATE_MODE=\"auto-update\" to allow silent builds, or place a pre-compiled binary at:"
+                    print_error "  $FAE_LINUX_BIN"
+                    exit 1
                 fi
                 ;;
         esac
