@@ -75,23 +75,27 @@ if [ ! -t 1 ] && [ -z "${FAE_IN_TERMINAL:-}" ]; then
     } > "$LAUNCHER_TMP"
     chmod +x "$LAUNCHER_TMP"
 
-    # Try common terminal emulators in order of preference.
-    # gnome-terminal needs --wait so Steam does not think the game already quit.
-    # All others run in the foreground by default when exec'd.
-    for term in xterm gnome-terminal konsole xfce4-terminal alacritty kitty; do
-        if command -v "$term" &>/dev/null; then
-            case "$term" in
-                gnome-terminal) exec gnome-terminal --wait -- bash "$LAUNCHER_TMP" ;;
-                konsole)        exec konsole -e bash "$LAUNCHER_TMP" ;;
-                xfce4-terminal) exec xfce4-terminal -e "bash $LAUNCHER_TMP" ;;
-                alacritty)      exec alacritty -e bash "$LAUNCHER_TMP" ;;
-                kitty)          exec kitty bash "$LAUNCHER_TMP" ;;
-                xterm)          exec xterm -e bash "$LAUNCHER_TMP" ;;
-                # Is your favorite terminal missing here? Feel free to create a PR with it added :)
-                # Know kow to do this better? please i beg you, please 
-            esac
-        fi
+    # Try to launch a terminal emulator running our temp script.
+    # Most terminals accept `-e <cmd>`; only a few need special flags.
+    # To add support for another terminal, just append it to the for-loop list.
+    _exec_in_term() {
+        command -v "$1" &>/dev/null || return 1
+        case "$1" in
+            gnome-terminal) exec gnome-terminal --wait -- bash "$LAUNCHER_TMP" ;;
+            kitty|foot)     exec "$1" bash "$LAUNCHER_TMP" ;;
+            wezterm)        exec wezterm start bash "$LAUNCHER_TMP" ;;
+            *)              exec "$1" -e bash "$LAUNCHER_TMP" ;;
+        esac
+    }
+    # 1. Debian/Ubuntu system-configured terminal
+    _exec_in_term x-terminal-emulator
+    # 2. User's preferred terminal (e.g. export TERMINAL=alacritty in .profile)
+    [ -n "${TERMINAL:-}" ] && _exec_in_term "${TERMINAL##*/}"
+    # 3. Common fallback list
+    for _t in gnome-terminal konsole xfce4-terminal alacritty kitty wezterm foot xterm urxvt tilix terminator; do
+        _exec_in_term "$_t"
     done
+    unset -f _exec_in_term
 
     # No terminal emulator found — remove the temp file and continue headlessly.
     rm -f "$LAUNCHER_TMP"
