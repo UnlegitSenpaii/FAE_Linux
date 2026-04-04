@@ -7,4 +7,4 @@ Found here: https://github.com/UnlegitSenpaii/FAE_Linux/releases
 ## Reporting a Vulnerability
 To report a vulnerability, you can create an issue on the issues page.<br>
 If it is urgent, I will try to respond to you in the evening (CET) else on the weekends.<br>
-For non-public disclosure, you can send me a Discord DM at senpaii.dev.
+For non-public disclosure, you can send me a Discord DM. My discord username is "senpaii.dev".
