@@ -235,14 +235,14 @@ if [ "$needs_patch" = true ]; then
                 print_warning "Always verify the repository before proceeding!"
                 echo
                 if [ -t 0 ]; then
-                    read -rp "  Proceed with build from GitHub? [y/N]: " BUILD_CHOICE
+                    read -rp "  Proceed with build from GitHub? [Y/n]: " BUILD_CHOICE
                     case "${BUILD_CHOICE,,}" in
-                        y|yes) needs_rebuild=true ;;
-                        *)
+                        n|no)
                             print_error "Build cancelled."
                             print_error "To use an existing binary place it at: $FAE_LINUX_BIN"
                             exit 1
                             ;;
+                        *) needs_rebuild=true ;;
                     esac
                 else
                     # Headless — build automatically
