@@ -488,21 +488,31 @@ print_info "Launching factorio_patched..."
 export LD_LIBRARY_PATH="$STEAM_LD_LIBRARY_PATH"
 export LD_PRELOAD="$STEAM_LD_PRELOAD"
 
-# Forward any extra arguments (e.g., Steam's %command% tail) to the binary.
-# Steam typically passes the original binary path as the last positional
-# argument; we drop it and keep everything else.
-EXTRA_ARGS=()
+# If Steam launched us via %command%, replay the original runtime/wrapper chain
+# but replace the final Factorio binary path with the patched one. This keeps
+# Steam's own launch semantics intact and avoids passing wrapper-only flags such
+# as --oom-score-adjust directly to Factorio.
+LAUNCH_CMD=()
+USED_STEAM_CHAIN=false
 for arg in "$@"; do
-    # Skip the original factorio binary path so we don't double-launch it
-    if [ "$arg" != "$FACTORIO_BIN" ]; then
-        EXTRA_ARGS+=("$arg")
+    if [ "$arg" = "$FACTORIO_BIN" ]; then
+        LAUNCH_CMD+=("$FACTORIO_PATCHED_BIN")
+        USED_STEAM_CHAIN=true
+    else
+        LAUNCH_CMD+=("$arg")
     fi
 done
 
-# Replace this wrapper process with the actual game process so Steam keeps
+# Fallback for manual invocation outside Steam where the original Factorio
+# binary path is not present in the arguments.
+if [ "$USED_STEAM_CHAIN" = false ]; then
+    LAUNCH_CMD=("$FACTORIO_PATCHED_BIN" "$@")
+fi
+
+# Replace this wrapper process with the actual launch target so Steam keeps
 # tracking the launched app correctly in Gaming Mode.
 print_success "Factorio launched. Handing control to Steam..."
-exec "$FACTORIO_PATCHED_BIN" "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
+exec "${LAUNCH_CMD[@]}"
 
 
 
