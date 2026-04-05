@@ -253,6 +253,22 @@ FACTORIO_PATCHED_BIN="$FACTORIO_BIN_DIR/$FACTORIO_PATCHED_NAME"
 FAE_LINUX_BIN="$SCRIPT_DIR/$FAE_LINUX_BIN_NAME"
 FAE_LINUX_REPO_TMP="$SCRIPT_DIR/$FAE_LINUX_BUILD_DIR_NAME"
 FAE_LOG_FILE="$SCRIPT_DIR/fae_launch.log"
+FAE_STAGE="startup"
+
+if [ ! -t 1 ]; then
+    {
+        printf '\n[FAE] ===== %s =====\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+        printf '[FAE] Headless launch detected\n'
+        printf '[FAE] Script: %s\n' "$0"
+        printf '[FAE] Args:'
+        printf ' %q' "$@"
+        printf '\n'
+        printf '[FAE] PWD: %s\n' "$(pwd)"
+    } >> "$FAE_LOG_FILE" 2>/dev/null || true
+
+    exec >> "$FAE_LOG_FILE" 2>&1
+    trap 'rc=$?; printf "[FAE] Exit stage=%s code=%d\n" "$FAE_STAGE" "$rc"' EXIT
+fi
 
 # ---------------------------------------------------------------------------
 # Sanity-check that the original factorio binary exists
@@ -281,6 +297,7 @@ get_build_id() {
 }
 
 ORIGINAL_BUILD_ID="$(get_build_id "$FACTORIO_BIN")"
+FAE_STAGE="build-id-check"
 if [ -z "$ORIGINAL_BUILD_ID" ]; then
     print_warning "Could not determine Factorio BuildID ('file'/'readelf' unavailable)."
     print_warning "Up-to-date check disabled — will always re-patch when needed."
@@ -308,6 +325,7 @@ fi
 # Build FAE_Linux (if needed), copy factorio → factorio_patched, patch it
 # ---------------------------------------------------------------------------
 if [ "$needs_patch" = true ]; then
+    FAE_STAGE="prepare-patch"
 
     needs_rebuild=false
 
@@ -380,6 +398,7 @@ if [ "$needs_patch" = true ]; then
     #    present, otherwise fall back to the latest pre-built release binary.
     # -----------------------------------------------------------------------
     if [ "$needs_rebuild" = true ]; then
+        FAE_STAGE="rebuild-patcher"
         if check_build_deps; then
             print_info "Cloning FAE_Linux $FAE_LINUX_BRANCH branch..."
 
@@ -439,6 +458,7 @@ if [ "$needs_patch" = true ]; then
     # -----------------------------------------------------------------------
     # 4. Copy factorio → factorio_patched and run the patcher
     # -----------------------------------------------------------------------
+    FAE_STAGE="patch-factorio"
     print_info "Copying factorio → factorio_patched..."
     cp "$FACTORIO_BIN" "$FACTORIO_PATCHED_BIN"
 
@@ -461,6 +481,7 @@ fi
 # ---------------------------------------------------------------------------
 # 5. Launch factorio_patched
 # ---------------------------------------------------------------------------
+FAE_STAGE="launch-factorio"
 print_info "Launching factorio_patched..."
 
 # Restore Steam's library environment so Factorio can find Steam's own libs
