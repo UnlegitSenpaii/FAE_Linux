@@ -13,7 +13,7 @@
 #   /home/<user>/.local/share/Steam/steamapps/common/Factorio/
 
 # 2. Set as Steam launch option (with full path!!). Example:
-#   bash /home/<user>/.local/share/Steam/steamapps/common/Factorio/fae_launch.sh %command%
+#   bash /home/<user>/.local/share/Steam/steamapps/common/Factorio/faeDesktop.sh %command%
 
 # ---------------------------------------------------------------------------
 # Configuration — edit these to match your setup
@@ -24,6 +24,13 @@
 #   keep        — always use the existing binary without asking
 #   auto-update — always pull and rebuild from GitHub without asking
 FAE_UPDATE_MODE="prompt"
+
+# Set to 1 to skip terminal spawning and run entirely in headless mode.
+# Useful on systems without a display server or when you don't want a
+# terminal window to appear at all.
+#   0 (default) — spawn a terminal window when not already in one
+#   1           — always run headless, no terminal window - RECOMMENDED FOR STEAMDECK
+FAE_HEADLESS="0"
 
 # Factorio binary subdirectory relative to the Factorio root
 FACTORIO_BIN_SUBDIR="bin/x64"
@@ -51,13 +58,7 @@ FAE_LINUX_BRANCH="master"
 # FAE_IN_TERMINAL guards against infinite relaunching.
 # ---------------------------------------------------------------------------
 
-# Steam Deck gaming mode runs inside Gamescope, which exposes no usable
-# terminal emulator. Detect it early and mark ourselves as already-in-terminal
-# so we skip the spawn loop and go straight to headless execution.
-# Gamescope sets GAMESCOPE_WAYLAND_DISPLAY; gaming mode also sets
-# XDG_CURRENT_DESKTOP=gamescope. Either is sufficient.
-if [ -n "${GAMESCOPE_WAYLAND_DISPLAY:-}" ] || \
-   [ "${XDG_CURRENT_DESKTOP:-}" = "gamescope" ]; then
+if [ "${FAE_HEADLESS:-0}" = "1" ]; then
     export FAE_IN_TERMINAL=1
 fi
 
@@ -90,17 +91,24 @@ if [ ! -t 1 ] && [ -z "${FAE_IN_TERMINAL:-}" ]; then
         } > "$LAUNCHER_TMP"
         chmod +x "$LAUNCHER_TMP"
 
-        # Try to launch a terminal emulator running our temp script.
-        # Most terminals accept `-e <cmd>`; only a few need special flags.
-        # To add support for another terminal, just append it to the for-loop list.
         _exec_in_term() {
             command -v "$1" &>/dev/null || return 1
+            local _rc
             case "$1" in
-                gnome-terminal) exec gnome-terminal --wait -- bash "$LAUNCHER_TMP" ;;
-                kitty|foot)     exec "$1" bash "$LAUNCHER_TMP" ;;
-                wezterm)        exec wezterm start bash "$LAUNCHER_TMP" ;;
-                *)              exec "$1" -e bash "$LAUNCHER_TMP" ;;
+                gnome-terminal) gnome-terminal --wait -- bash "$LAUNCHER_TMP"; _rc=$? ;;
+                kitty|foot)     "$1" bash "$LAUNCHER_TMP";                     _rc=$? ;;
+                wezterm)        wezterm start bash "$LAUNCHER_TMP";             _rc=$? ;;
+                *)              "$1" -e bash "$LAUNCHER_TMP";                  _rc=$? ;;
             esac
+            if [ "$_rc" -eq 0 ]; then
+                # Launcher completed successfully; Factorio is now running detached.
+                rm -f "$LAUNCHER_TMP"
+                exit 0
+            fi
+            # Terminal was found but exited with an error — it likely crashed on
+            # startup (e.g. no display). Fall through to try the next emulator.
+            printf '[WARNING] Terminal "%s" exited with code %d — trying next emulator.\n' "$1" "$_rc" >&2
+            return 1
         }
         # 1. Debian/Ubuntu system-configured terminal
         _exec_in_term x-terminal-emulator
@@ -112,13 +120,15 @@ if [ ! -t 1 ] && [ -z "${FAE_IN_TERMINAL:-}" ]; then
         done
         unset -f _exec_in_term
 
-        # No terminal emulator found — remove the temp file and continue headlessly.
+        # No terminal emulator could be launched successfully — remove the temp
+        # file and continue in headless mode so Factorio still gets patched and
+        # started (e.g. Steam Deck where no usable terminal is available).
         rm -f "$LAUNCHER_TMP"
-        printf '[WARNING] No terminal emulator found. Running without a visible window.\n' >&2
+        printf '[WARNING] No terminal emulator found or all failed to launch. Falling back to headless mode.\n' >&2
     fi
 fi
 
-set -euo pipefail
+#set -euo pipefail
 
 # ---------------------------------------------------------------------------
 # Steam injects its own bundled libraries via LD_LIBRARY_PATH and LD_PRELOAD.
