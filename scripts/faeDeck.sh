@@ -478,14 +478,10 @@ for arg in "$@"; do
     fi
 done
 
-# Launch detached from this terminal so the window closes immediately on success.
-# setsid creates a new process session so the child is immune to the terminal's
-# SIGHUP when it closes. disown removes it from the shell's job table.
-# All output is redirected to /dev/null — Factorio has its own log files.
-setsid nohup "$FACTORIO_PATCHED_BIN" "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}" &>/dev/null &
-disown $!
-
-print_success "Factorio launched. Closing window..."
+# Replace this wrapper process with the actual game process so Steam keeps
+# tracking the launched app correctly in Gaming Mode.
+print_success "Factorio launched. Handing control to Steam..."
+exec "$FACTORIO_PATCHED_BIN" "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
 
 
 
