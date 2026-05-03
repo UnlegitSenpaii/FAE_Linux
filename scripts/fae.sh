@@ -8,29 +8,30 @@
 #    ╚═╝░░░░░╚═╝░░╚═╝╚══════╝  ╚══════╝╚═╝╚═╝░░╚══╝░╚═════╝░╚═╝░░╚═╝
 
 # Automation script for Factorio Achievement Enabler for Linux -- written with AI assistance
+# Preconfigured for the Steam Deck
 
 # 1. Place this script in your Factorio directory. Example:
-#   /home/<user>/.local/share/Steam/steamapps/common/Factorio/
+#   /home/deck/.local/share/Steam/steamapps/common/Factorio/
 
 # 2. Set as Steam launch option (with full path!!). Example:
-#   bash /home/<user>/.local/share/Steam/steamapps/common/Factorio/faeDesktop.sh %command%
+#   bash /home/deck/.local/share/Steam/steamapps/common/Factorio/faeDeck.sh %command%
 
 # ---------------------------------------------------------------------------
 # Configuration — edit these to match your setup
 # ---------------------------------------------------------------------------
 
 # Controls how FAE_Linux updates are handled when a new patch is needed.
-#   prompt      — ask each time (default, recommended)
-#   keep        — always use the existing binary without asking
-#   auto-update — always pull and rebuild from GitHub without asking
-FAE_UPDATE_MODE="prompt"
+#   prompt      — ask each time (recommended for desktop)
+#   keep        — always use the existing binary without asking (default, recommended for Steam Deck)
+#   auto-update — always pull and rebuild from GitHub without asking (incase you want to trust random people on the internet)
+FAE_UPDATE_MODE="keep"
 
 # Set to 1 to skip terminal spawning and run entirely in headless mode.
 # Useful on systems without a display server or when you don't want a
 # terminal window to appear at all.
-#   0 (default) — spawn a terminal window when not already in one
-#   1           — always run headless, no terminal window - RECOMMENDED FOR STEAMDECK
-FAE_HEADLESS="0"
+#   0           — spawn a terminal window when not already in one - REQUIRED FOR PROMPT UPDATE MODE
+#   1           — always run headless, no terminal window - REQUIRED FOR STEAMDECK
+FAE_HEADLESS="1"
 
 # Factorio binary subdirectory relative to the Factorio root
 FACTORIO_BIN_SUBDIR="bin/x64"
@@ -251,7 +252,6 @@ FACTORIO_BIN="$FACTORIO_BIN_DIR/$FACTORIO_BIN_NAME"
 FACTORIO_PATCHED_BIN="$FACTORIO_BIN_DIR/$FACTORIO_PATCHED_NAME"
 FAE_LINUX_BIN="$SCRIPT_DIR/$FAE_LINUX_BIN_NAME"
 FAE_LINUX_REPO_TMP="$SCRIPT_DIR/$FAE_LINUX_BUILD_DIR_NAME"
-FAE_LOG_FILE="$SCRIPT_DIR/fae_launch.log"
 
 # ---------------------------------------------------------------------------
 # Sanity-check that the original factorio binary exists
@@ -334,7 +334,6 @@ if [ "$needs_patch" = true ]; then
                     read -rp "  [e] Use existing patcher   [u] Update from GitHub   (e/u, default: e): " UPDATE_CHOICE
                 else
                     UPDATE_CHOICE="e"
-                    printf '[FAE] %s Headless mode: FAE_UPDATE_MODE=prompt defaults to keep. Set FAE_UPDATE_MODE=auto-update to enable automatic updates in headless mode.\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "$FAE_LOG_FILE" 2>/dev/null || true
                 fi
                 case "${UPDATE_CHOICE,,}" in
                     e|existing) print_info "Using existing FAE_Linux binary." ;;
@@ -361,7 +360,6 @@ if [ "$needs_patch" = true ]; then
                     # Headless + prompt mode + no binary — cannot ask the user.
                     # Download the latest pre-built release binary as a safe fallback
                     # (e.g. Steam Deck gaming mode where no terminal is available).
-                    printf '[FAE] %s Headless+prompt: no FAE_Linux binary found; downloading pre-built release binary.\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "$FAE_LOG_FILE" 2>/dev/null || true
                     print_info "Headless mode: no binary found — downloading pre-built release binary..."
                     download_latest_release "$FAE_LINUX_BIN" || {
                         print_error "Could not obtain FAE_Linux binary automatically."
@@ -466,25 +464,31 @@ print_info "Launching factorio_patched..."
 export LD_LIBRARY_PATH="$STEAM_LD_LIBRARY_PATH"
 export LD_PRELOAD="$STEAM_LD_PRELOAD"
 
-# Forward any extra arguments (e.g., Steam's %command% tail) to the binary.
-# Steam typically passes the original binary path as the last positional
-# argument; we drop it and keep everything else.
-EXTRA_ARGS=()
+# If Steam launched us via %command%, replay the original runtime/wrapper chain
+# but replace the final Factorio binary path with the patched one. This keeps
+# Steam's own launch semantics intact and avoids passing wrapper-only flags such
+# as --oom-score-adjust directly to Factorio.
+LAUNCH_CMD=()
+USED_STEAM_CHAIN=false
 for arg in "$@"; do
-    # Skip the original factorio binary path so we don't double-launch it
-    if [ "$arg" != "$FACTORIO_BIN" ]; then
-        EXTRA_ARGS+=("$arg")
+    if [ "$arg" = "$FACTORIO_BIN" ]; then
+        LAUNCH_CMD+=("$FACTORIO_PATCHED_BIN")
+        USED_STEAM_CHAIN=true
+    else
+        LAUNCH_CMD+=("$arg")
     fi
 done
 
-# Launch detached from this terminal so the window closes immediately on success.
-# setsid creates a new process session so the child is immune to the terminal's
-# SIGHUP when it closes. disown removes it from the shell's job table.
-# All output is redirected to /dev/null — Factorio has its own log files.
-setsid nohup "$FACTORIO_PATCHED_BIN" "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}" &>/dev/null &
-disown $!
+# Fallback for manual invocation outside Steam where the original Factorio
+# binary path is not present in the arguments.
+if [ "$USED_STEAM_CHAIN" = false ]; then
+    LAUNCH_CMD=("$FACTORIO_PATCHED_BIN" "$@")
+fi
 
-print_success "Factorio launched. Closing window..."
+# Replace this wrapper process with the actual launch target so Steam keeps
+# tracking the launched app correctly in Gaming Mode.
+print_success "Factorio launched. Handing control to Steam..."
+exec "${LAUNCH_CMD[@]}"
 
 
 

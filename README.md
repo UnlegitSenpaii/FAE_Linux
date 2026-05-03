@@ -32,7 +32,7 @@ Pick the method that matches how you play:
 
 ### Automatic Setup (Recommended)
 
-The included `fae_launch.sh` script does everything for you every time you launch Factorio through Steam:
+The included `fae.sh` script does everything for you every time you launch Factorio through Steam:
 - Checks whether Factorio was updated since the last patch.
 - Re-patches automatically if needed.
 - Launches the patched game.
@@ -43,27 +43,23 @@ Your Factorio folder is usually at:
 ```
 ~/.local/share/Steam/steamapps/common/Factorio/
 ```
-Copy `fae_launch.sh` directly into that folder (not into `bin/` or any subfolder).
+Copy `fae.sh` and the `FAE_Linux` binary directly into that folder (not into `bin/` or any subfolder).
 
 **Step 2 — Set it as a Steam launch option**
 
 In Steam: right-click **Factorio** → **Properties** → **Launch Options**, and paste this line (replace `<user>` with your Linux username):
 
 ```sh
-bash /home/<user>/.local/share/Steam/steamapps/common/Factorio/fae_launch.sh %command%
+bash /home/<user>/.local/share/Steam/steamapps/common/Factorio/fae.sh %command%
 ```
 
 > **Steam Deck?** Replace `<user>` with `deck`.
 
 That's it. Launch Factorio from Steam as normal — the script runs in the background.
 
-**First launch behaviour**
-
-The first time you run it (or after a Factorio update), a terminal window will appear and ask whether to use an existing FAE_Linux patcher binary or download and build one from GitHub. Choose whichever you prefer and the window will close automatically once the game starts.
-
 **Changing update behaviour**
 
-Open `fae_launch.sh` in a text editor and find the `FAE_UPDATE_MODE` line near the top:
+Open `fae.sh` in a text editor and find the `FAE_UPDATE_MODE` line near the top:
 
 | Value | What happens |
 |---|---|
