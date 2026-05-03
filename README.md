@@ -18,7 +18,7 @@ Factorio disables Steam achievements whenever mods are loaded. `FAE_Linux` patch
 
 Important: `FAE_Linux` patches whichever binary path you give it **in place**. The original binary is left untouched only when you use the included `fae.sh` script, which first creates a separate copied binary alongside the original and patches that copy.
 
-If you are using the patcher manually, copy `factorio` to a new file first (for example `factorio_patched`) and run `FAE_Linux` on that copied file instead of the original binary.
+If you are using the patcher manually and want to restore the original functionality, you will need to verify your gamefiles through steam.
 
 ---
 
@@ -51,7 +51,7 @@ Copy `fae.sh` and the `FAE_Linux` binary directly into that folder (not into `bi
 
 **Step 2 — Set it as a Steam launch option**
 
-In Steam: right-click **Factorio** → **Properties** → **Launch Options**, and paste this line (replace `<user>` with your Linux username):
+In Steam: right-click **Factorio** → **Properties** → **Launch Options**, and the full path of the dropped `fae.sh` script as an argument:
 
 ```sh
 bash /home/<user>/.local/share/Steam/steamapps/common/Factorio/fae.sh %command%
