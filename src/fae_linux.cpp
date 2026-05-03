@@ -111,7 +111,13 @@ int main(int argc, char *argv[]) {
     Log::LogF("Initialized Logging.\n");
 
     if (argc < 2) {
-        Log::LogF("Incorrect Usage!\nUsage: %s [Factorio File Path]\n", argv[0]);
+        Log::LogF(
+            "Incorrect Usage!\n"
+            "Usage: %s [Factorio File Path] [--no-prompt]\n"
+            "Flags:\n"
+            "  --no-prompt    Do not wait for user input before exiting.\n",
+            argv[0]
+        );
         return 1;
     }
 
