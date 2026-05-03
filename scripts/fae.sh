@@ -14,7 +14,7 @@
 #   /home/deck/.local/share/Steam/steamapps/common/Factorio/
 
 # 2. Set as Steam launch option (with full path!!). Example:
-#   bash /home/deck/.local/share/Steam/steamapps/common/Factorio/faeDeck.sh %command%
+#   bash /home/deck/.local/share/Steam/steamapps/common/Factorio/fae.sh %command%
 
 # ---------------------------------------------------------------------------
 # Configuration — edit these to match your setup
