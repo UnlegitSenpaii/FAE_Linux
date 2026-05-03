@@ -1,7 +1,10 @@
 /cmake-build-debug/*
-/out/*
+/out/
 /.idea/*
 /Makefile
 /CMakeCache.txt
 /cmake_install.cmake
 .vscode/settings.json
+/.vscode/
+/CMakeFiles/
+/build/

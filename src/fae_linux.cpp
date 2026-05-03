@@ -111,9 +111,23 @@ int main(int argc, char *argv[]) {
     Log::LogF("Initialized Logging.\n");
 
     if (argc < 2) {
-        Log::LogF("Incorrect Usage!\nUsage: %s [Factorio File Path]\n", argv[0]);
+        Log::LogF(
+            "Incorrect Usage!\n"
+            "Usage: %s [Factorio File Path] [--no-prompt]\n"
+            "Flags:\n"
+            "  --no-prompt    Do not wait for user input before exiting.\n",
+            argv[0]
+        );
         return 1;
     }
+
+    bool noPrompt = false;
+    for (int i = 2; i < argc; ++i) {
+        if (std::string(argv[i]) == "--no-prompt") {
+            noPrompt = true;
+        }
+    }
+
     std::string factorioFilePath = argv[1];
 
     if (!FileHelper::DoesFileExist(factorioFilePath)) {
@@ -135,10 +149,14 @@ int main(int argc, char *argv[]) {
         }
 
         std::string userInput = "";
-        Log::LogF("\033[1mDo you want to use the modded achievement save? (y/N)\033[0m\n");
-        std::getline(std::cin, userInput);
+        if (noPrompt) {
+            Log::LogF("--no-prompt set: using default (vanilla achievements.dat)\n");
+        } else {
+            Log::LogF("\033[1mDo you want to use the modded achievement save? (y/N)\033[0m\n");
+            std::getline(std::cin, userInput);
+        }
 
-        if (userInput.empty() || std::tolower(userInput[0]) == 'n') {
+        if (noPrompt || userInput.empty() || std::tolower(userInput[0]) == 'n') {
             Log::LogF("Using vanilla achievements.dat\n");
             doPatching(buffer, patternEntry);
             
