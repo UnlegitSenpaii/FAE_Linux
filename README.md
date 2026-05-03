@@ -63,8 +63,8 @@ Open `fae.sh` in a text editor and find the `FAE_UPDATE_MODE` line near the top:
 
 | Value | What happens |
 |---|---|
-| `prompt` | Asks you each time a new patch is needed. **(default)** |
-| `keep` | Always uses the existing patcher binary without asking. |
+| `prompt` | Asks you each time a new patch is needed. |
+| `keep` | Always uses the existing patcher binary without asking. **(default)** |
 | `auto-update` | Always pulls and rebuilds the latest patcher from GitHub without asking. |
 
 ---
