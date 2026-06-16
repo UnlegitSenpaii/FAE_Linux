@@ -49,6 +49,11 @@ Your Factorio folder is usually at:
 ```
 Copy `fae.sh` and the `FAE_Linux` binary directly into that folder (not into `bin/` or any subfolder).
 
+Then make the `FAE_Linux` binary executable:
+```sh
+chmod +x ~/.local/share/Steam/steamapps/common/Factorio/FAE_Linux
+```
+
 **Step 2 — Set it as a Steam launch option**
 
 In Steam: right-click **Factorio** → **Properties** → **Launch Options**, and the full path of the dropped `fae.sh` script as an argument:
