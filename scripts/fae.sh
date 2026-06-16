@@ -135,7 +135,7 @@ download_latest_release() {
     if command -v file &>/dev/null; then
         local arch file_out arch_ok
         arch="$(uname -m)"
-        file_out="$(file "$dest_tmp" 2>/dev/null)"
+        file_out="$(run_clean file "$dest_tmp" 2>/dev/null)"
         arch_ok=true
         case "$arch" in
             x86_64)  printf '%s' "$file_out" | grep -qE 'x86-64|x86_64'      || arch_ok=false ;;
@@ -172,7 +172,7 @@ fi
 get_build_id() {
     local binary="$1"
     if command -v file &>/dev/null; then
-        file "$binary" 2>/dev/null \
+        run_clean file "$binary" 2>/dev/null \
             | sed -n 's/.*BuildID\[sha1\]=\([0-9a-f]*\).*/\1/p'
     elif command -v readelf &>/dev/null; then
         readelf -n "$binary" 2>/dev/null \
