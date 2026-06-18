@@ -175,7 +175,7 @@ get_build_id() {
         run_clean file "$binary" 2>/dev/null \
             | sed -n 's/.*BuildID\[sha1\]=\([0-9a-f]*\).*/\1/p'
     elif command -v readelf &>/dev/null; then
-        readelf -n "$binary" 2>/dev/null \
+        run_clean readelf -n "$binary" 2>/dev/null \
             | sed -n 's/.*Build ID: \([0-9a-f]*\).*/\1/p' | head -1
     fi
 }
