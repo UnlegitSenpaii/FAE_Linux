@@ -1,4 +1,4 @@
-# FAE_Linux - Factorio Achievement Enabler for Linux
+# FAE_Linux - Factorio Achievement Enabler for Linux - Experimental Factorio Branch - Limited Support
 
 **FAE_Linux** lets you earn Steam achievements in Factorio even when mods are active — something the game normally blocks.
 
