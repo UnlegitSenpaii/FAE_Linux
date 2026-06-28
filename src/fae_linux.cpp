@@ -10,66 +10,57 @@
  * Want to update the patterns yourself?
  * check out the wiki: https://github.com/UnlegitSenpaii/FAE_Linux/wiki/Finding-the-currently-used-patterns-in-ghidra
  *
- * why is ghidra 11.3.1 so ass?
+ * why is ghidra so slow on linux? zZzZ
  *
- * Patterns:
- * (missing -> turned to part 1 of OnUserStatsReceived) SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
- * 74 37 66 0f 1f 44 00 00 48 8b 10 80
- * if this one breaks, look at the first match for 74 ? 66 0F 1F 44 ? ? 48 8B ? 80 7A ? 00
+ * Notes about pattern:
  *
- * (missing  -> turned to part 2 of OnUserStatsReceived) SteamContext::updateAchievementStatsFromSteam jz > jnz
- * 74 30 0f 1f 80 00 00 00 00 48 8b 10
+ * SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
+ * Possibly inlined in OnUserStatsReceived -- Currently: yes
  *
- * AchievementGui::refresh ---- XREF gui-achievements.modded-game
- * 84 df 00 00 00 48 8b 10 80 7a 3e 01 75 ea -- JNZ > JZ
+ * SteamContext::updateAchievementStatsFromSteam jz > jnz
+ * Possibly inlined in OnUserStatsReceived -- Currently: yes
  *
- * note for me: this is the achievements.dat & achievements-modded.dat thingy
- * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat
+ * AchievementGui::refresh ---- XREF gui-achievements.modded-game  -- JNZ > JZ
+ *
  * PlayerData::PlayerData JZ > jnz
- * 74 2e 48 8d 15 2b 91 e6 fd eb 0d 0f 1f 40 00 48 83 c0 08
+ * this is the achievements.dat & achievements-modded.dat thingy
+ * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat
  *
  * SteamContext::setStat jz > jmp
- * 74 1a 4c 8b 00 41 80 78 3e 01 75 ed 41 80 78 40 01 75 e6 41 80 78 41
  *
  * SteamContext::unlockAchievement jz > jmp
- * 74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c
- *
- * SteamContext::OnUserStatsReceived JZ > JMP
- * 74 ?  48 8b ?  80 7A ?  ?  ?  ?  80 7A ?  ?  ?  ?  80 7A ?  ?  ?  ?  e9 22 01 00 00
- * 74 68 48 ba 74 65 73 74 5f 6d 6f 64 eb 0f 66 0f 1f 44 00 00 48 83 c0 08
  *
  * AchievementGui::allowed (map) jz > jmp
- * 74 07 48 83 78 20 00 75 cc   JZ > JNZ    //maybe not needed
- * 75 cc 49 8b 80 ? 01     JNZ > JMP
+ * todo: replace top of function with return true: B8 returnval 00 00 00 C3
  */
 
 std::vector<patternData_t> patternList = {
     /*
-        JZ -> JNZ Patches
-    */
-    { PATCH_TYPE_JZJNZ, "PlayerData::PlayerData",
-        "74 2e 48 8d 15 ? ? ? ? eb 0d 0f 1f 40 00 48 83 c0 08", 1, true },
-
-    { PATCH_TYPE_JZJNZ, "AchievementGui::refresh",
-        "84 df 00 00 00 48 8b 10 80 7a 3e 01 75 ea" },
-
-    /*
         JZ -> JMP Patches
     */
+    { PATCH_TYPE_JZJMP, "PlayerData::PlayerData",
+        "74 e2 48 89 d3 48 b8 ff ff ff ff ff ff ff 7f", 1, true },
+
     { PATCH_TYPE_JZJMP, "SteamContext::setStat",
         "74 1a 4c 8b 00 41 80 78 3e 01 75 ed 41 80 78 40 01 75 e6 41 80 78 41" },
 
     { PATCH_TYPE_JZJMP, "SteamContext::unlockAchievement",
         "74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c" },
 
-    { PATCH_TYPE_JZJMP, "SteamContext::OnUserStatsReceived",
-        "74 ? 48 8b ? 80 7A ? ? ? ? 80 7A ? ? ? ? 80 7A ? ? ? ? e9 22 01 00 00" },
+    { PATCH_TYPE_JZJMP, "SteamContext::updateAchievementStatsFromSteam",
+        "74 ? 48 8B 31 80 7E ? 01 ? ? 80 7E ? 01" },
 
-    { PATCH_TYPE_JZJMP, "SteamContext::OnUserStatsReceived2",
-        "74 68 48 ba 74 65 73 74 5f 6d 6f 64 eb 0f 66 0f 1f 44 00 00 48 83 c0 08" },
+    { PATCH_TYPE_JZJMP, "SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally",
+        "74 ? 48 ba 74 65 73 74 5f 6d 6f 64 eb ? * 48 83 c0 08" },
 
     { PATCH_TYPE_JZJMP, "AchievementGui::allowed",
         "74 07 48 83 78 20 00 75 cc" },
+
+    /*
+        JZ -> JNZ Patches
+    */
+    { PATCH_TYPE_JZJNZ, "AchievementGui::refresh",
+        "84 ? 00 00 00 48 8b 10 80 7a 3e 01 75 ea" },
 
     /*
         JNZ -> JMP Patches

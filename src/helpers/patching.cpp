@@ -19,62 +19,6 @@ std::uint8_t HexToByte(const std::string& hex)
     return (HexCharToValue(hex[0]) << 4) | HexCharToValue(hex[1]);
 }
 
-std::vector<std::optional<std::uint8_t>> ConvertPattern(const std::string& patternAsString)
-{
-    std::vector<std::optional<std::uint8_t>> pattern;
-    std::istringstream stream(patternAsString);
-    std::string byteStr;
-
-    while (stream >> byteStr) {
-        if (byteStr == "?") {
-            pattern.push_back(std::nullopt);
-            continue;
-        }
-
-        pattern.push_back(HexToByte(byteStr));
-    }
-    return pattern;
-}
-
-bool IsFlexPattern(const std::string& patternAsString)
-{
-    return patternAsString.find('*') != std::string::npos;
-}
-
-static std::vector<std::vector<std::optional<std::uint8_t>>> SplitFlexPattern(const std::string& patternAsString)
-{
-    std::vector<std::vector<std::optional<std::uint8_t>>> parts;
-    std::string current;
-    std::istringstream stream(patternAsString);
-    std::string token;
-
-    while (stream >> token) {
-        if (token == "*") {
-            if (!current.empty()) {
-                try {
-                    parts.push_back(ConvertPattern(current));
-                } catch (...) {
-                    return { };
-                }
-                current.clear();
-            }
-        } else {
-            if (!current.empty())
-                current += " ";
-            current += token;
-        }
-    }
-    if (!current.empty()) {
-        try {
-            parts.push_back(ConvertPattern(current));
-        } catch (...) {
-            return { };
-        }
-    }
-    return parts;
-}
-
-// optional magic: will not contain a value in the location if the byte is a wildcard
 bool MatchesPattern(const std::vector<std::uint8_t>& buffer, const std::vector<std::optional<std::uint8_t>>& pattern, std::size_t pos)
 {
     for (std::size_t i = 0; i < pattern.size(); ++i) {
@@ -83,6 +27,53 @@ bool MatchesPattern(const std::vector<std::uint8_t>& buffer, const std::vector<s
         }
     }
     return true;
+}
+
+std::vector<std::vector<std::optional<std::uint8_t>>> Patcher::ParsePattern(std::string_view input)
+{
+    std::vector<std::vector<std::optional<std::uint8_t>>> result;
+    std::vector<std::optional<std::uint8_t>> current;
+
+    size_t i = 0;
+    while (i < input.size()) {
+        char c = input[i];
+
+        if (c == ' ' || c == '\t') {
+            ++i;
+            continue;
+        }
+
+        if (c == '?') {
+            current.push_back(std::nullopt);
+            ++i;
+            continue;
+        }
+
+        if (c == '*') {
+            if (!current.empty()) {
+                result.push_back(std::move(current));
+                current.clear();
+            }
+            ++i;
+            continue;
+        }
+
+        if (i + 1 < input.size()) {
+            std::uint8_t hi = HexCharToValue(input[i]);
+            std::uint8_t lo = HexCharToValue(input[i + 1]);
+            current.push_back(static_cast<std::uint8_t>((hi << 4) | lo));
+            i += 2;
+            continue;
+        }
+
+        throw std::invalid_argument("Incomplete hex byte in pattern");
+    }
+
+    if (!current.empty()) {
+        result.push_back(std::move(current));
+    }
+
+    return result;
 }
 
 bool Patcher::GenerateFlexPattern(const std::vector<uint8_t>& buffer, const std::vector<std::vector<std::optional<std::uint8_t>>>& parts, size_t startPos, size_t& matchEnd)
@@ -106,7 +97,7 @@ bool Patcher::GenerateFlexPattern(const std::vector<uint8_t>& buffer, const std:
 
         for (size_t scan = cursor; scan < searchEnd; ++scan) {
             if (MatchesPattern(buffer, part, scan)) {
-                cursor = scan;
+                cursor = scan + part.size();
                 found = true;
                 break;
             }
@@ -121,20 +112,25 @@ bool Patcher::GenerateFlexPattern(const std::vector<uint8_t>& buffer, const std:
 
 bool Patcher::GenerateSearchPattern(const std::vector<std::uint8_t>& buffer, const std::string& incompleteSearchPattern, std::vector<std::uint8_t>& searchPattern)
 {
-    std::vector<std::optional<std::uint8_t>> pattern { };
+    std::vector<std::vector<std::optional<std::uint8_t>>> pattern;
+    try {
+        pattern = ParsePattern(incompleteSearchPattern);
+    } catch (const std::invalid_argument& e) {
+        Log::LogF("Error in Pattern: %s\n", e.what());
+        return false;
+    }
 
-    // idk if this is going to work, this is throwing shit at a wall and seeing if it sticks.
-    if (IsFlexPattern(incompleteSearchPattern)) {
-        auto parts = SplitFlexPattern(incompleteSearchPattern);
-        if (parts.empty() || parts[0].empty())
-            return false;
+    if (pattern.empty() || pattern[0].empty())
+        return false;
 
-        for (size_t pos = 0; pos <= buffer.size() - parts[0].size(); ++pos) {
-            if (!MatchesPattern(buffer, parts[0], pos))
+    if (pattern.size() > 1) {
+        const auto& firstSegment = pattern[0];
+        for (size_t pos = 0; pos <= buffer.size() - firstSegment.size(); ++pos) {
+            if (!MatchesPattern(buffer, firstSegment, pos))
                 continue;
 
             size_t matchEnd;
-            if (!GenerateFlexPattern(buffer, parts, pos, matchEnd))
+            if (!GenerateFlexPattern(buffer, pattern, pos, matchEnd))
                 continue;
 
             searchPattern.insert(searchPattern.end(),
@@ -144,28 +140,28 @@ bool Patcher::GenerateSearchPattern(const std::vector<std::uint8_t>& buffer, con
         return false;
     }
 
-    try {
-        pattern = ConvertPattern(incompleteSearchPattern);
-    } catch (const std::invalid_argument& e) {
-        Log::LogF("Error in Pattern: %s\n", e.what());
-        return false;
+    const auto& segment = pattern[0];
+
+    bool allConcrete = true;
+    for (const auto& atom : segment) {
+        if (!atom.has_value()) {
+            allConcrete = false;
+            break;
+        }
     }
 
-    // check if we have wildcards, if not, we can just return the pattern
-    if (std::none_of(pattern.begin(), pattern.end(), [](const std::optional<std::uint8_t>& byte) { return !byte.has_value(); })) {
-        searchPattern = std::vector<std::uint8_t>(pattern.size());
-        for (std::size_t i = 0; i < pattern.size(); ++i) {
-            searchPattern[i] = pattern[i].value();
-        }
+    if (allConcrete) {
+        searchPattern.resize(segment.size());
+        for (std::size_t i = 0; i < segment.size(); ++i)
+            searchPattern[i] = segment[i].value();
         return true;
     }
 
-    for (std::size_t bufferPos = 0; bufferPos <= buffer.size() - pattern.size(); ++bufferPos) {
-        if (!MatchesPattern(buffer, pattern, bufferPos)) {
+    for (std::size_t bufferPos = 0; bufferPos <= buffer.size() - segment.size(); ++bufferPos) {
+        if (!MatchesPattern(buffer, segment, bufferPos))
             continue;
-        }
 
-        searchPattern.insert(searchPattern.end(), buffer.begin() + bufferPos, buffer.begin() + bufferPos + pattern.size());
+        searchPattern.insert(searchPattern.end(), buffer.begin() + bufferPos, buffer.begin() + bufferPos + segment.size());
         return true;
     }
 

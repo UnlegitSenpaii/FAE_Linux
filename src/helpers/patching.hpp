@@ -7,8 +7,6 @@
 #include <fstream>
 #include <iostream>
 #include <optional>
-#include <ranges>
-#include <sstream>
 #include <stdexcept>
 #include <string_view>
 #include <vector>
@@ -33,9 +31,9 @@ struct patternData_t {
 namespace Patcher {
     static constexpr size_t FLEX_GAP_MAX = 16;
 
+    std::vector<std::vector<std::optional<std::uint8_t>>> ParsePattern(std::string_view input);
     bool GenerateSearchPattern(const std::vector<std::uint8_t>& buffer, const std::string& incompleteSearchPattern, std::vector<std::uint8_t>& searchPattern);
     bool GenerateFlexPattern(const std::vector<uint8_t>& buffer, const std::vector<std::vector<std::optional<std::uint8_t>>>& parts, size_t startPos, size_t& matchEnd);
     bool ReplaceHexPattern(std::vector<std::uint8_t>& buffer, const std::vector<std::uint8_t>& searchPattern, const std::vector<std::uint8_t>& replacePattern, int expectedPatchCount = 1);
     std::vector<std::uint8_t> GenerateReplacePattern(const std::vector<std::uint8_t>& searchPattern, int replaceInstruction);
-    bool FindPattern(const std::vector<std::uint8_t>& buffer, const std::string& patternAsString, std::vector<std::size_t>& matchPositions);
 }
