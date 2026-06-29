@@ -1,102 +1,95 @@
+#include "helpers/filehelper.hpp"
+#include "helpers/logging.hpp"
+#include "helpers/patching.hpp"
 #include <iostream>
-#include <vector>
 #include <unistd.h>
 #include <unordered_map>
-#include "helpers/logging.hpp"
-#include "helpers/filehelper.hpp"
-#include "helpers/patching.hpp"
+#include <vector>
 
 /*
  * Want to update the patterns yourself?
  * check out the wiki: https://github.com/UnlegitSenpaii/FAE_Linux/wiki/Finding-the-currently-used-patterns-in-ghidra
- * 
- * why is ghidra 11.3.1 so ass?
- * Patterns:
- * (missing -> turned to part 1 of OnUserStatsReceived) SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
- * 74 37 66 0f 1f 44 00 00 48 8b 10 80
- * if this one breaks, look at the first match for 74 ? 66 0F 1F 44 ? ? 48 8B ? 80 7A ? 00
- * 
- * (missing  -> turned to part 2 of OnUserStatsReceived) SteamContext::updateAchievementStatsFromSteam jz > jnz
- * 74 30 0f 1f 80 00 00 00 00 48 8b 10
  *
- * AchievementGui::refresh ---- XREF gui-achievements.modded-game
- * 84 df 00 00 00 48 8b 10 80 7a 3e 01 75 ea -- JNZ > JZ
+ * why is ghidra so slow on linux? zZzZ
  *
- * note for me: this is the achievements.dat & achievements-modded.dat thingy
- * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat 
+ * Notes about pattern:
+ *
+ * SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
+ * Possibly inlined in OnUserStatsReceived -- Currently: yes
+ *
+ * SteamContext::updateAchievementStatsFromSteam jz > jnz
+ * Possibly inlined in OnUserStatsReceived -- Currently: yes
+ *
+ * AchievementGui::refresh ---- XREF gui-achievements.modded-game  -- JNZ > JZ
+ *
  * PlayerData::PlayerData JZ > jnz
- * 74 2e 48 8d 15 2b 91 e6 fd eb 0d 0f 1f 40 00 48 83 c0 08 
+ * this is the achievements.dat & achievements-modded.dat thingy
+ * todo: instead of doing this, just edit achievements-modded.dat to achievements.dat
  *
  * SteamContext::setStat jz > jmp
- * 74 1a 4c 8b 00 41 80 78 3e 01 75 ed 41 80 78 40 01 75 e6 41 80 78 41
  *
- * SteamContext::unlockAchievement jz > jmp 
- * 74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c
- * 
- * SteamContext::OnUserStatsReceived JZ > JMP
- * 74 ?  48 8b ?  80 7A ?  ?  ?  ?  80 7A ?  ?  ?  ?  80 7A ?  ?  ?  ?  e9 22 01 00 00
- * 74 68 48 ba 74 65 73 74 5f 6d 6f 64 eb 0f 66 0f 1f 44 00 00 48 83 c0 08 
- * 
+ * SteamContext::unlockAchievement jz > jmp
+ *
  * AchievementGui::allowed (map) jz > jmp
- * 74 07 48 83 78 20 00 75 cc   JZ > JNZ    //maybe not needed
- * 75 cc 49 8b 80 ? 01     JNZ > JMP 
+ * todo: replace top of function with return true: B8 returnval 00 00 00 C3
  */
 
 std::vector<patternData_t> patternList = {
     /*
-        JZ -> JNZ Patches
-    */
-    {PATCH_TYPE_JZJNZ, "PlayerData::PlayerData", 
-    "74 2e 48 8d 15 ? ? ? ? eb 0d 0f 1f 40 00 48 83 c0 08", 1, true},
-
-    {PATCH_TYPE_JZJNZ, "AchievementGui::refresh",
-    "84 df 00 00 00 48 8b 10 80 7a 3e 01 75 ea"},
-
-    /*
         JZ -> JMP Patches
     */
-    {PATCH_TYPE_JZJMP, "SteamContext::setStat", 
-    "74 1a 4c 8b 00 41 80 78 3e 01 75 ed 41 80 78 40 01 75 e6 41 80 78 41"},
+    { PATCH_TYPE_JZJMP, "PlayerData::PlayerData",
+        "74 e2 48 89 d3 48 b8 ff ff ff ff ff ff ff 7f", 1, true },
 
-    {PATCH_TYPE_JZJMP, "SteamContext::unlockAchievement", 
-    "74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c"},
+    { PATCH_TYPE_JZJMP, "SteamContext::setStat",
+        "74 1a 4c 8b 00 41 80 78 3e 01 75 ed 41 80 78 40 01 75 e6 41 80 78 41" },
 
-    {PATCH_TYPE_JZJMP, "SteamContext::OnUserStatsReceived", 
-    "74 ? 48 8b ? 80 7A ? ? ? ? 80 7A ? ? ? ? 80 7A ? ? ? ? e9 22 01 00 00"},
+    { PATCH_TYPE_JZJMP, "SteamContext::unlockAchievement",
+        "74 17 48 8b 10 80 7a 3e 01 75 ee 80 7a 40 01 75 e8 80 7a 41 01 74 e2 eb 3c" },
 
-    {PATCH_TYPE_JZJMP, "SteamContext::OnUserStatsReceived2", 
-    "74 68 48 ba 74 65 73 74 5f 6d 6f 64 eb 0f 66 0f 1f 44 00 00 48 83 c0 08"},
+    { PATCH_TYPE_JZJMP, "AchievementGui::allowed",
+        "74 07 48 83 78 20 00 75 cc" },
 
-    {PATCH_TYPE_JZJMP, "AchievementGui::allowed",
-    "74 07 48 83 78 20 00 75 cc"},
+    /*
+        JZ -> JNZ Patches
+    */
+    { PATCH_TYPE_JZJNZ, "SteamContext::updateAchievementStatsFromSteam",
+        "74 ? 48 8B 31 80 7E ? 01 ? ? 80 7E ? 01" },
+
+    { PATCH_TYPE_JZJNZ, "SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally",
+        "74 ? 48 ba 74 65 73 74 5f 6d 6f 64 eb ? * 48 83 c0 08" },
+        
+    { PATCH_TYPE_JZJNZ, "AchievementGui::refresh",
+        "84 ? 00 00 00 48 8b 10 80 7a 3e 01 75 ea" },
 
     /*
         JNZ -> JMP Patches
     */
-    {PATCH_TYPE_JNZJMP, "AchievementGui::allowed2", 
-    "75 cc 49 8b 80 ? 01"},
+    { PATCH_TYPE_JNZJMP, "AchievementGui::allowed2",
+        "75 cc 49 8b 80 ? 01" },
 
 };
 
-void doPatching(std::vector<std::uint8_t> &buffer, const patternData_t& patternData) {
+void doPatching(std::vector<std::uint8_t>& buffer, const patternData_t& patternData)
+{
     Log::LogF("Patching %s:\n", patternData.patternName.c_str());
-    
+
     std::vector<std::uint8_t> completeSearchPattern;
     if (!Patcher::GenerateSearchPattern(buffer, patternData.pattern, completeSearchPattern)) {
         Log::LogF(" -> FAILED!\n");
         return;
     }
-    
+
     const std::vector<uint8_t> replacementPattern = Patcher::GenerateReplacePattern(completeSearchPattern, patternData.patchType);
-    
+
     std::string completePatternAsString;
-    for (const auto &byte : completeSearchPattern) {
-        char buffer[4]; //just dont overflow, please
+    for (const auto& byte : completeSearchPattern) {
+        char buffer[4]; // just dont overflow, please
         snprintf(buffer, sizeof(buffer), "%02X ", byte);
         completePatternAsString += buffer;
     }
     Log::LogF("Looking for memory pattern: %s\n", completePatternAsString.c_str());
-    
+
     if (!Patcher::ReplaceHexPattern(buffer, completeSearchPattern, replacementPattern, patternData.expectedPatchCount)) {
         Log::LogF(" -> FAILED!\n");
         return;
@@ -104,8 +97,8 @@ void doPatching(std::vector<std::uint8_t> &buffer, const patternData_t& patternD
     Log::LogF(" -> SUCCESS!\n");
 }
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[])
+{
     Log::PrintAsciiArtWelcome();
     Log::Initialize("./FAE_Debug.log", false);
     Log::LogF("Initialized Logging.\n");
@@ -116,8 +109,7 @@ int main(int argc, char *argv[]) {
             "Usage: %s [Factorio File Path] [--no-prompt]\n"
             "Flags:\n"
             "  --no-prompt    Do not wait for user input before exiting.\n",
-            argv[0]
-        );
+            argv[0]);
         return 1;
     }
 
@@ -142,8 +134,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    for (const auto &patternEntry : patternList) {
-        if(!patternEntry.optional){
+    for (const auto& patternEntry : patternList) {
+        if (!patternEntry.optional) {
             doPatching(buffer, patternEntry);
             continue;
         }
@@ -159,7 +151,7 @@ int main(int argc, char *argv[]) {
         if (noPrompt || userInput.empty() || std::tolower(userInput[0]) == 'n') {
             Log::LogF("Using vanilla achievements.dat\n");
             doPatching(buffer, patternEntry);
-            
+
         } else {
             Log::LogF("Using modded achievements.dat\n");
         }
