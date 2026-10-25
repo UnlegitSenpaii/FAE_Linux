@@ -6,6 +6,11 @@ bool FileHelper::DoesFileExist(const std::string& name)
     return (stat(name.c_str(), &buffer) == 0);
 }
 
+bool FileHelper::IsThisAnELFFile(const std::vector<std::uint8_t>& buffer)
+{
+    return buffer.size() >= 4 && buffer[0] == 0x7F && buffer[1] == 'E' && buffer[2] == 'L' && buffer[3] == 'F';
+}
+
 bool FileHelper::MarkFileExecutable(const std::string& file_path)
 {
     if (chmod(file_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {

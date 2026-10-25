@@ -10,6 +10,7 @@
 
 namespace FileHelper {
     bool DoesFileExist(const std::string& name);
+    bool IsThisAnELFFile(const std::vector<std::uint8_t>& buffer);
     bool MarkFileExecutable(const std::string& file_path);
     bool ReadFileToBuffer(const std::string& filePath, std::vector<std::uint8_t>& buffer);
     bool WriteBufferToFile(const std::string& filePath, const std::vector<std::uint8_t>& buffer);

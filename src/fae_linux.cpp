@@ -18,11 +18,11 @@
  * Possibly inlined in OnUserStatsReceived -- Currently: no
  * 74 4B 48 BA 74 65 73 74 5F 6D 6F 64 EB 11 0F 1F 84 00 00 00 00 00 48 83 C0 08
  *
- * SteamContext::updateAchievementStatsFromSteam jz > jnz 
+ * SteamContext::updateAchievementStatsFromSteam jz > jnz
  * Possibly inlined in OnUserStatsReceived -- Currently: no
- * 74 1a 48 8b 10 80 7a 3e 01 75 ee 
+ * 74 1a 48 8b 10 80 7a 3e 01 75 ee
  * todo: make this pattern longer with more ? and * so its more stable
- * 
+ *
  * AchievementGui::refresh ---- XREF gui-achievements.modded-game  -- JNZ > JZ
  *
  * PlayerData::PlayerData JZ > jnz
@@ -57,11 +57,11 @@ std::vector<patternData_t> patternList = {
         JZ -> JNZ Patches
     */
     { PATCH_TYPE_JZJNZ, "SteamContext::updateAchievementStatsFromSteam",
-        " 74 1a 48 8b 10 80 7a 3e 01 75 ee "},
+        "74 1a 48 8b 10 80 7a 3e 01 75 ee" },
 
     { PATCH_TYPE_JZJNZ, "SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally",
         "74 ? 48 ba 74 65 73 74 5f 6d 6f 64 eb ? * 48 83 c0 08" },
-        
+
     { PATCH_TYPE_JZJNZ, "AchievementGui::refresh",
         "84 ? 00 00 00 48 8b 10 80 7a 3e 01 75 ea" },
 
@@ -134,6 +134,12 @@ int main(int argc, char* argv[])
     std::vector<std::uint8_t> buffer;
     if (!FileHelper::ReadFileToBuffer(factorioFilePath, buffer)) {
         Log::LogF("Failed to read factorio to buffer.\n");
+        return 1;
+    }
+
+    if (!FileHelper::IsThisAnELFFile(buffer)) {
+        Log::LogF("The provided file is not an ELF binary: %s\n", factorioFilePath.c_str());
+        Log::LogF("Factorio 2.1.23+ ships bin/x64/factorio as a launcher script. You can find the real binary in bin/x64_/factorio!\n");
         return 1;
     }
 
