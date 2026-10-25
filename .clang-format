@@ -1,0 +1,4 @@
+---
+BasedOnStyle: WebKit #webkit is based, sometimes
+NamespaceIndentation: All
+...

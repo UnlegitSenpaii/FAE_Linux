@@ -156,17 +156,28 @@ download_latest_release() {
 
 # Paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-FACTORIO_BIN_DIR="$SCRIPT_DIR/$FACTORIO_BIN_SUBDIR"
-FACTORIO_BIN="$FACTORIO_BIN_DIR/$FACTORIO_BIN_NAME"
-FACTORIO_PATCHED_BIN="$FACTORIO_BIN_DIR/$FACTORIO_PATCHED_NAME"
+FACTORIO_LAUNCHER="$SCRIPT_DIR/$FACTORIO_BIN_SUBDIR/$FACTORIO_BIN_NAME"
 FAE_LINUX_BIN="$SCRIPT_DIR/$FAE_LINUX_BIN_NAME"
 FAE_LINUX_REPO_TMP="$SCRIPT_DIR/$FAE_LINUX_BUILD_DIR_NAME"
+
+# Factorio 2.1.23+ ships bin/x64/factorio as a proxy script that execs the real
+# binary from bin/x64_ (x86-64) or bin/arm64 (ARM); patch that one instead.
+case "$(uname -m)" in
+    aarch64|arm64) FACTORIO_BIN="$SCRIPT_DIR/bin/arm64/$FACTORIO_BIN_NAME" ;;
+    *)             FACTORIO_BIN="$SCRIPT_DIR/bin/x64_/$FACTORIO_BIN_NAME" ;;
+esac
+# Older versions keep the binary where Steam expects it.
+[ -f "$FACTORIO_BIN" ] || FACTORIO_BIN="$FACTORIO_LAUNCHER"
 
 if [ ! -f "$FACTORIO_BIN" ]; then
     echo "[ERROR] Factorio binary not found at: $FACTORIO_BIN"
     echo "[ERROR] Make sure this script is placed in the Factorio root directory."
     exit 1
 fi
+
+# Factorio loads libsteam_api.so via RUNPATH=$ORIGIN, so the patched copy has to
+# stay next to the real binary.
+FACTORIO_PATCHED_BIN="$(dirname "$FACTORIO_BIN")/$FACTORIO_PATCHED_NAME"
 
 # get BuildID[sha1] from binary
 get_build_id() {
@@ -330,6 +341,10 @@ if [ "$needs_patch" = true ]; then
         exit $PATCHER_EXIT
     }
 
+    if cmp -s -- "$FACTORIO_BIN" "$FACTORIO_PATCHED_BIN"; then
+        echo "[WARNING] Patcher changed nothing; already patched or patterns don't match."
+    fi
+
     echo "[SUCCESS] Patching completed successfully!"
 fi
 
@@ -341,7 +356,7 @@ export LD_PRELOAD="$STEAM_LD_PRELOAD"
 LAUNCH_CMD=()
 USED_STEAM_CHAIN=false
 for arg in "$@"; do
-    if [ "$arg" = "$FACTORIO_BIN" ]; then
+    if [ "$arg" = "$FACTORIO_LAUNCHER" ] || [ "$arg" = "$FACTORIO_BIN" ]; then
         LAUNCH_CMD+=("$FACTORIO_PATCHED_BIN")
         USED_STEAM_CHAIN=true
     else

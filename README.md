@@ -82,6 +82,8 @@ Open `fae.sh` in a text editor and find the `FAE_UPDATE_MODE` line near the top:
 
 Use this if you prefer to run the patcher yourself rather than having it run automatically on launch.
 
+> **Factorio 2.1.23 and newer** ships `bin/x64/factorio` as a small launcher script instead of the game binary. Point the patcher at the real binary instead: `bin/x64_/factorio` on x86-64, or `bin/arm64/factorio` on ARM. On older versions, `bin/x64/factorio` *is* the binary.
+
 #### Linux (Desktop)
 
 1. **Download** the `FAE_Linux` executable from the [Releases page](https://github.com/UnlegitSenpaii/FAE_Linux/releases).
@@ -91,7 +93,7 @@ Use this if you prefer to run the patcher yourself rather than having it run aut
    ```
 3. **Run it**, pointing it at the Factorio binary:
    ```sh
-   ~/Downloads/FAE_Linux /path/to/Factorio/bin/x64/factorio
+   ~/Downloads/FAE_Linux /path/to/Factorio/bin/x64_/factorio
    ```
 
 > If the executable doesn't run, your system may need you to [build from source](#building-from-source).
@@ -106,7 +108,7 @@ Use this if you prefer to run the patcher yourself rather than having it run aut
    ```
 4. **Run it:**
    ```sh
-   ~/Downloads/FAE_Linux /home/deck/.local/share/Steam/steamapps/common/Factorio/bin/x64/factorio
+   ~/Downloads/FAE_Linux /home/deck/.local/share/Steam/steamapps/common/Factorio/bin/x64_/factorio
    ```
 
 > This assumes Factorio is installed on the internal drive. Adjust the path if you use an SD card.
@@ -115,7 +117,7 @@ Use this if you prefer to run the patcher yourself rather than having it run aut
 
 If you use Nix with Flakes enabled:
 ```sh
-nix run github:UnlegitSenpaii/FAE_Linux /path/to/Factorio/bin/x64/factorio
+nix run github:UnlegitSenpaii/FAE_Linux /path/to/Factorio/bin/x64_/factorio
 ```
 
 ---
