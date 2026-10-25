@@ -15,11 +15,14 @@
  * Notes about pattern:
  *
  * SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally jz > jnz
- * Possibly inlined in OnUserStatsReceived -- Currently: yes
+ * Possibly inlined in OnUserStatsReceived -- Currently: no
+ * 74 4B 48 BA 74 65 73 74 5F 6D 6F 64 EB 11 0F 1F 84 00 00 00 00 00 48 83 C0 08
  *
- * SteamContext::updateAchievementStatsFromSteam jz > jnz
- * Possibly inlined in OnUserStatsReceived -- Currently: yes
- *
+ * SteamContext::updateAchievementStatsFromSteam jz > jnz 
+ * Possibly inlined in OnUserStatsReceived -- Currently: no
+ * 74 1a 48 8b 10 80 7a 3e 01 75 ee 
+ * todo: make this pattern longer with more ? and * so its more stable
+ * 
  * AchievementGui::refresh ---- XREF gui-achievements.modded-game  -- JNZ > JZ
  *
  * PlayerData::PlayerData JZ > jnz
@@ -54,7 +57,7 @@ std::vector<patternData_t> patternList = {
         JZ -> JNZ Patches
     */
     { PATCH_TYPE_JZJNZ, "SteamContext::updateAchievementStatsFromSteam",
-        "74 ? 48 8B 31 80 7E ? 01 ? ? 80 7E ? 01" },
+        " 74 1a 48 8b 10 80 7a 3e 01 75 ee "},
 
     { PATCH_TYPE_JZJNZ, "SteamContext::unlockAchievementsThatAreOnSteamButArentActivatedLocally",
         "74 ? 48 ba 74 65 73 74 5f 6d 6f 64 eb ? * 48 83 c0 08" },
